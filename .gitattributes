@@ -1,0 +1,15 @@
+tests/* linguist-documentation=false
+tests/* linguist-vendored=true
+examples/* linguist-documentation=false
+examples/* linguist-vendored=true
+
+text=auto
+
+*.cc text
+*.h text
+*.py text
+*.pyi text
+*.toml text
+*.md text
+
+*.csv=binary

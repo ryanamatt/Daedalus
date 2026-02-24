@@ -1,0 +1,24 @@
+PROJECT_NAME           = "Daedalus"
+PROJECT_BRIEF          = "A C++ Machine Learning Library with Python Bindings"
+OUTPUT_DIRECTORY       = docs
+GENERATE_LATEX         = NO
+GENERATE_HTML          = YES
+
+Input settings
+
+INPUT                  = include/daedalus src/ README.md
+RECURSIVE              = YES
+FILE_PATTERNS          = *.h *.cc *.md
+USE_MDFILE_AS_MAINPAGE = README.md
+
+Extraction settings
+
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+
+Aesthetics
+
+HTML_COLORSTYLE_HUE    = 220
+HTML_COLORSTYLE_SAT    = 40
+HTML_COLORSTYLE_GAMMA  = 80
