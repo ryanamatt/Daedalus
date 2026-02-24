@@ -111,4 +111,4 @@ The name **Daedalus** is inspired by the master craftsman of Greek mythology. Li
 
 ## **📜 License**
 
-N/A
+This library is licensed under the MIT License. See [LICENSE](LICENSE) for more details.
