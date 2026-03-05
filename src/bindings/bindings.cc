@@ -18,6 +18,34 @@
 
 namespace py = pybind11;
 
+// Trampoline class for the abstract Model interface
+template <typename T = double>
+class PyModel : public Model<T> {
+public:
+    /* Inherit the constructors */
+    using Model<T>::Model;
+
+    /* Trampoline for fit (virtual function) */
+    void fit(const Matrix<T>& X, const Matrix<T>& y) override {
+        PYBIND11_OVERRIDE_PURE(
+            void,      /* Return type */
+            Model<T>,  /* Parent class */
+            fit,       /* Name of function in C++ (must match Python name) */
+            X, y       /* Argument(s) */
+        );
+    }
+
+    /* Trampoline for predict (virtual function) */
+    Matrix<T> predict(const Matrix<T>& X) const override {
+        PYBIND11_OVERRIDE_PURE(
+            Matrix<T>, /* Return type */
+            Model<T>,  /* Parent class */
+            predict,   /* Name of function in C++ */
+            X          /* Argument(s) */
+        );
+    }
+};
+
 PYBIND11_MODULE(_core, m) {
     m.doc() = "Daedalus: A Machine Learning library";
 
@@ -154,8 +182,16 @@ PYBIND11_MODULE(_core, m) {
     }, py::arg("X"), py::arg("y"), py::arg("test_size") = 0.2, py::arg("seed") = 42,
     "Splits features and targets into training and testing sets.");
 
+    // --- Model Bindings ---
+    py::class_<Model<double>, PyModel<double>>(m, "Model")
+        .def(py::init<>())
+        .def("fit", &Model<double>::fit, py::arg("X"), py::arg("y"),
+        "Trains the model on the provided dataset.")
+        .def("predict", &Model<double>::predict, py::arg("X"), 
+         "Makes predictions using the trained model parameters.");
+
     // --- Linear Regression Bindings ---
-    py::class_<LinearRegression>(m, "LinearRegression")
+    py::class_<LinearRegression, Model<double>>(m, "LinearRegression")
         .def(py::init<double, double, std::string>(), py::arg("learning_rate") = 0.01, py::arg("reg_lambda") = 0.01, 
             py::arg("penalty") = "none")
         .def("fit", py::overload_cast<const Matrix<double>&, const Matrix<double>&>(&LinearRegression::fit),
@@ -167,7 +203,7 @@ PYBIND11_MODULE(_core, m) {
         .def("load_model", &LinearRegression::loadModel, py::arg("filename"));
 
     // --- Logistic Regression Bindings
-    py::class_<LogisticRegression>(m, "LogisticRegression")
+    py::class_<LogisticRegression, Model<double>>(m, "LogisticRegression")
         .def(py::init<double, double, std::string>(), 
          py::arg("learning_rate") = 0.01, 
          py::arg("reg_lambda") = 0.01, 
@@ -182,13 +218,13 @@ PYBIND11_MODULE(_core, m) {
         .def("load_model", &LogisticRegression::loadModel, py::arg("filename"));
 
     // --- KNN Model Bindings ---
-    py::class_<KNN>(m, "KNN")
+    py::class_<KNN, Model<double>>(m, "KNN")
         .def(py::init<int>(), py::arg("k") = 3)
         .def("fit", &KNN::fit, py::arg("X"), py::arg("y"))
         .def("predict", &KNN::predict, py::arg("X"));
 
     // --- Neural Network Bindings ---
-    py::class_<NeuralNetwork>(m, "NeuralNetwork")
+    py::class_<NeuralNetwork, Model<double>>(m, "NeuralNetwork")
         .def(py::init<double>(), py::arg("lr") = 0.01)
         .def("add", [](NeuralNetwork &nn, int in, int out) {
             nn.add(std::make_unique<DenseLayer>(in, out));

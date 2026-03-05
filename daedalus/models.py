@@ -1,3 +1,3 @@
-from ._core import LinearRegression, LogisticRegression, KNN, NeuralNetwork
+from ._core import Model, LinearRegression, LogisticRegression, KNN, NeuralNetwork
 
-__all__ = ["LinearRegression", "LogisticRegression", "KNN", "NeuralNetwork"]
+__all__ = ["Model", "LinearRegression", "LogisticRegression", "KNN", "NeuralNetwork"]

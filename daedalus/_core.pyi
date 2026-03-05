@@ -4,7 +4,7 @@ Daedalus: A Machine Learning library
 from __future__ import annotations
 import collections.abc
 import typing
-__all__: list[str] = ['DataFrame', 'KNN', 'LinearRegression', 'LogisticRegression', 'Matrix', 'NeuralNetwork', 'StandardScaler', 'accuracy_score', 'f1_score', 'mean_squared_error', 'precision_score', 'r2_score', 'read_csv', 'recall_score', 'train_test_split']
+__all__: list[str] = ['DataFrame', 'KNN', 'LinearRegression', 'LogisticRegression', 'Matrix', 'Model', 'NeuralNetwork', 'StandardScaler', 'accuracy_score', 'f1_score', 'mean_squared_error', 'precision_score', 'r2_score', 'read_csv', 'recall_score', 'train_test_split']
 class DataFrame:
     @typing.overload
     def __init__(self) -> None:
@@ -46,14 +46,14 @@ class DataFrame:
     @property
     def rows(self) -> int:
         ...
-class KNN:
+class KNN(Model):
     def __init__(self, k: typing.SupportsInt | typing.SupportsIndex = 3) -> None:
         ...
     def fit(self, X: Matrix, y: Matrix) -> None:
         ...
     def predict(self, X: Matrix) -> Matrix:
         ...
-class LinearRegression:
+class LinearRegression(Model):
     def __init__(self, learning_rate: typing.SupportsFloat | typing.SupportsIndex = 0.01, reg_lambda: typing.SupportsFloat | typing.SupportsIndex = 0.01, penalty: str = 'none') -> None:
         ...
     @typing.overload
@@ -68,7 +68,7 @@ class LinearRegression:
         ...
     def save_model(self, filename: str) -> None:
         ...
-class LogisticRegression:
+class LogisticRegression(Model):
     def __init__(self, learning_rate: typing.SupportsFloat | typing.SupportsIndex = 0.01, reg_lambda: typing.SupportsFloat | typing.SupportsIndex = 0.01, penalty: str = 'none') -> None:
         ...
     @typing.overload
@@ -120,7 +120,18 @@ class Matrix:
     @property
     def rows(self) -> int:
         ...
-class NeuralNetwork:
+class Model:
+    def __init__(self) -> None:
+        ...
+    def fit(self, X: Matrix, y: Matrix) -> None:
+        """
+        Trains the model on the provided dataset.
+        """
+    def predict(self, X: Matrix) -> Matrix:
+        """
+        Makes predictions using the trained model parameters.
+        """
+class NeuralNetwork(Model):
     def __init__(self, lr: typing.SupportsFloat | typing.SupportsIndex = 0.01) -> None:
         ...
     def add(self, arg0: typing.SupportsInt | typing.SupportsIndex, arg1: typing.SupportsInt | typing.SupportsIndex) -> None:
