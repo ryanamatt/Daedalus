@@ -176,6 +176,7 @@ PYBIND11_MODULE(_core, m) {
     m.def("precision_score", &Metrics::precision_score, py::arg("y_true"), py::arg("y_pred"));
     m.def("recall_score", &Metrics::recall_score, py::arg("y_true"), py::arg("y_pred"));
     m.def("f1_score", &Metrics::f1_score, py::arg("y_true"), py::arg("y_pred"));
+    m.def("mcc_score", &Metrics::mcc_score, py::arg("y_true"), py::arg("y_pred"));
 
     // --- Utils Bindings ---
     m.def("train_test_split", [](const Matrix<double>& X, const Matrix<double>& y, double test_size, int seed) {

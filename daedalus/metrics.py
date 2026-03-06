@@ -3,4 +3,7 @@ from ._core import (
     precision_score, recall_score, f1_score
 )
 
-__all__ = ["mean_squared_error", "r2_score", "confusion_matrix", "accuracy_score", "precision_score", "recall_score", "f1_score"]
+__all__ = [
+    "mean_squared_error", "r2_score", "confusion_matrix", "accuracy_score", 
+    "precision_score", "recall_score", "f1_score", "mcc_score"
+]

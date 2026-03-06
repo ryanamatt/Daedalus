@@ -181,6 +181,21 @@ namespace Metrics {
         double r = recall_score(y_true, y_pred);
         return (p + r > 0) ? 2 * (p * r) / (p + r) : 0.0;
     }
+
+    inline double mcc_score(const Matrix<double>& y_true, const Matrix<double>& y_pred) {
+        if (y_true.rows() != y_pred.rows()) throw std::invalid_argument("Dimensions must match.");
+        Matrix conf_mat = confusion_matrix(y_true, y_pred);
+        double TP = conf_mat(0, 0);
+        double FP = conf_mat(0, 1);
+        double FN = conf_mat(1, 0);
+        double TN = conf_mat(1, 1);
+
+        double numerator = (TP * TN) - (FP * FN);
+        double denominator = std::sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN));
+        if (denominator == 0) { return 0.0; }
+
+        return numerator / denominator;
+    }
 }
 
 #endif // METRICS_H
