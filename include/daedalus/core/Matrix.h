@@ -33,11 +33,7 @@ public:
      * @param c Number of columns.
      * @throws std::invalid_argument if dimensions are less than zero.
      */
-    Matrix(size_t r, size_t c) : num_rows(r), num_cols(c), data(r * c) {
-        if (r < 0 || c < 0) {
-            throw std::invalid_argument("Matrix dimensions cannot be negative.");
-        }
-    }
+    Matrix(size_t r, size_t c) : num_rows(r), num_cols(c), data(r * c) {}
 
     /** @brief Accesses an element at (r, c) for modification. */
     T& operator()(size_t r, size_t c) { 

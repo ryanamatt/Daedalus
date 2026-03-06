@@ -15,6 +15,8 @@
 #include <numeric>
 #include <stdexcept>
 
+#include <iostream>
+
 /**
  * @namespace Metrics
  * @brief Mathematical evaluation functions for model performance.
@@ -76,11 +78,40 @@ namespace Metrics {
     }
 
     /**
+     * @brief Finds the True Positives of the Confusion Matrix.
+     * @param y_true Column matrix of ground truth values.
+     * @param y_pred Column matrix of predicted values.
+     * @return Matrix The confusion matrix.
+     * @throws std::invalid_argument if the number of rows in input matrices do not match.
+     */
+    inline Matrix<double> confusion_matrix(const Matrix<double>& y_true, const Matrix<double>& y_pred) {
+        double tp = 0, fp = 0, fn = 0, tn = 0;
+        for (size_t i = 0; i < y_true.rows(); ++i) {
+            if (y_pred(i, 0) == 1.0) {
+                if (y_true(i, 0) == 1.0) tp++;
+                else fp++;
+            }
+            else {
+                if (y_true(i, 0) == 1.0) fn++;
+                else tn++;
+            }
+        }
+
+        Matrix<double> conf_mat(2, 2);
+        conf_mat(0, 0) = tp;
+        conf_mat(0, 1) = fp;
+        conf_mat(1, 0) = fn;
+        conf_mat(1, 1) = tn;
+        return conf_mat;
+    }
+
+    /**
      * @brief Calculates the Accuracy Score for classification.
      * * Ratio of correct predictions to total number of input samples.
      * @param y_true Column matrix of ground truth labels.
      * @param y_pred Column matrix of predicted labels.
      * @return double Accuracy ranging from 0.0 to 1.0.
+     * @throws std::invalid_argument if the number of rows in input matrices do not match.
      */
     inline double accuracy_score(const Matrix<double>& y_true, const Matrix<double>& y_pred) {
         if (y_true.rows() != y_pred.rows()) throw std::invalid_argument("Dimensions mismatch");
@@ -99,8 +130,10 @@ namespace Metrics {
      * @param y_true Column matrix of ground truth labels.
      * @param y_pred Column matrix of predicted labels.
      * @return double Precision score.
+     * @throws std::invalid_argument if the number of rows in input matrices do not match.
      */
     inline double precision_score(const Matrix<double>& y_true, const Matrix<double>& y_pred) {
+        if (y_true.rows() != y_pred.rows()) throw std::invalid_argument("Dimensions must match.");
         double tp = 0, fp = 0;
         for (size_t i = 0; i < y_true.rows(); ++i) {
             if (y_pred(i, 0) == 1.0) {
@@ -118,8 +151,10 @@ namespace Metrics {
      * @param y_true Column matrix of ground truth labels.
      * @param y_pred Column matrix of predicted labels.
      * @return double Recall score.
+     * @throws std::invalid_argument if the number of rows in input matrices do not match.
      */
     inline double recall_score(const Matrix<double>& y_true, const Matrix<double>& y_pred) {
+        if (y_true.rows() != y_pred.rows()) throw std::invalid_argument("Dimensions must match.");
         double tp = 0, fn = 0;
         for (size_t i = 0; i < y_true.rows(); ++i) {
             if (y_true(i, 0) == 1.0) {
@@ -138,8 +173,10 @@ namespace Metrics {
      * @param y_true Column matrix of ground truth labels.
      * @param y_pred Column matrix of predicted labels.
      * @return double F1 score.
+     * @throws std::invalid_argument if the number of rows in input matrices do not match.
      */
     inline double f1_score(const Matrix<double>& y_true, const Matrix<double>& y_pred) {
+        if (y_true.rows() != y_pred.rows()) throw std::invalid_argument("Dimensions must match.");
         double p = precision_score(y_true, y_pred);
         double r = recall_score(y_true, y_pred);
         return (p + r > 0) ? 2 * (p * r) / (p + r) : 0.0;

@@ -171,6 +171,7 @@ PYBIND11_MODULE(_core, m) {
           py::arg("y_true"), py::arg("y_pred"), "Calculates Mean Squared Error");
     m.def("r2_score", &Metrics::r2_score, 
           py::arg("y_true"), py::arg("y_pred"), "Calculates R-Squared Score");
+    m.def("confusion_matrix", &Metrics::confusion_matrix, py::arg("y_true"), py::arg("y_pred"));
     m.def("accuracy_score", &Metrics::accuracy_score, py::arg("y_true"), py::arg("y_pred"));
     m.def("precision_score", &Metrics::precision_score, py::arg("y_true"), py::arg("y_pred"));
     m.def("recall_score", &Metrics::recall_score, py::arg("y_true"), py::arg("y_pred"));

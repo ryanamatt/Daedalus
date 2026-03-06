@@ -4,7 +4,7 @@ Daedalus: A Machine Learning library
 from __future__ import annotations
 import collections.abc
 import typing
-__all__: list[str] = ['DataFrame', 'KNN', 'LinearRegression', 'LogisticRegression', 'Matrix', 'Model', 'NeuralNetwork', 'StandardScaler', 'accuracy_score', 'f1_score', 'mean_squared_error', 'precision_score', 'r2_score', 'read_csv', 'recall_score', 'train_test_split']
+__all__: list[str] = ['DataFrame', 'KNN', 'LinearRegression', 'LogisticRegression', 'Matrix', 'Model', 'NeuralNetwork', 'StandardScaler', 'accuracy_score', 'confusion_matrix', 'f1_score', 'mean_squared_error', 'precision_score', 'r2_score', 'read_csv', 'recall_score', 'train_test_split']
 class DataFrame:
     @typing.overload
     def __init__(self) -> None:
@@ -154,6 +154,8 @@ class StandardScaler:
     def transform(self, X: Matrix) -> Matrix:
         ...
 def accuracy_score(y_true: Matrix, y_pred: Matrix) -> float:
+    ...
+def confusion_matrix(y_true: Matrix, y_pred: Matrix) -> Matrix:
     ...
 def f1_score(y_true: Matrix, y_pred: Matrix) -> float:
     ...
