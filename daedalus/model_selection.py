@@ -1,4 +1,4 @@
-from ._core import (
+from .daedalus_cpp import (
     train_test_split
 )
 

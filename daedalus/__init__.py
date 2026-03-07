@@ -1,4 +1,4 @@
-from ._core import Matrix, DataFrame, read_csv
+from .daedalus_cpp import Matrix, DataFrame, read_csv
 from . import models
 from . import metrics
 from . import preprocessing

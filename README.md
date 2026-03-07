@@ -34,7 +34,7 @@ Inside the source, you'll find experiments with:
 ## **📁 Project Structure**
 
 
-├── daedalus/           \# Python package (includes \_core bindings & stubs)  
+├── daedalus/           \# Python package (includes \daedalus_cpp bindings & stubs)  
 ├── include/daedalus/   \# C++ Header files  
 │   ├── core/           \# Matrix, DataFrame, and Math logic  
 │   └── models/         \# Model definitions (LinearRegression, etc.)  

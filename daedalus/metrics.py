@@ -1,4 +1,4 @@
-from ._core import (
+from .daedalus_cpp import (
     mean_squared_error, r2_score, confusion_matrix, accuracy_score, 
     precision_score, recall_score, f1_score
 )

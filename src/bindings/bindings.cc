@@ -46,7 +46,7 @@ public:
     }
 };
 
-PYBIND11_MODULE(_core, m) {
+PYBIND11_MODULE(daedalus_cpp, m) {
     m.doc() = "Daedalus: A Machine Learning library";
 
     // --- Matrix Bindings ---

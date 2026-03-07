@@ -30,7 +30,7 @@ env/
 .pytest_cache/
 .coverage
 htmlcov/
-daedalus/_core.
+daedalus/daedalus_cpp.
 
 .vscode/
 .idea/
