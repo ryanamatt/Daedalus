@@ -98,6 +98,10 @@ public:
     /** @return Number of columns in the matrix. */
     size_t cols() const { return num_cols; }
 
+    /** @return Pointer to the underlying raw data. */
+    T* data_ptr() { return data.data(); }
+    const T* data_ptr() const { return data.data(); }
+
     /**
      * @brief Extracts a single row from the matrix.
      * @param row_idx The index of the row to extract (0-indexed).
@@ -116,7 +120,36 @@ public:
         return row_matrix;
     }
 
+    /** @brief Creates a deepcopy of the matrix */
+    Matrix copy() const {
+        Matrix result(num_rows, num_cols);
+        result.data = this->data;
+        return result;
+    }
+
     // --- Standard Operators ---
+
+    // --- Addition ---
+
+    /** @brief In-place scalar addition (Broadcasting). */
+     Matrix& operator+=(const T& scalar) {
+        for (size_t i = 0; i < data.size(); ++i) {
+            data[i] += scalar;
+        }
+        return *this;
+    }
+
+    /** @brief Scalar addition (Matrix + scalar). */
+    friend Matrix operator+(Matrix lhs, const T& scalar) {
+        lhs += scalar;
+        return lhs;
+    }
+
+    /** @brief Scalar addition (scalar + Matrix). */
+    friend Matrix operator+(const T& scalar, Matrix rhs) {
+        rhs += scalar;
+        return rhs;
+    }
 
     /** @brief In-place matrix addition. 
      * @throws std::invalid_argument on dimension mismatch. 
@@ -135,6 +168,28 @@ public:
     friend Matrix operator+(Matrix lhs, const Matrix& rhs) {
         lhs += rhs;
         return lhs;
+    }
+
+    // --- Subtraction ---
+
+    /** @brief In-place scalar subtraction (Broadcasting). */
+     Matrix& operator-=(const T& scalar) {
+        for (size_t i = 0; i < data.size(); ++i) {
+            data[i] -= scalar;
+        }
+        return *this;
+    }
+
+    /** @brief Scalar subtraction (Matrix - scalar). */
+    friend Matrix operator-(Matrix lhs, const T& scalar) {
+        lhs -= scalar;
+        return lhs;
+    }
+
+    /** @brief Scalar subtraction (scalar - Matrix). */
+    friend Matrix operator-(const T& scalar, Matrix rhs) {
+        rhs -= scalar;
+        return rhs;
     }
 
     /** @brief In-place matrix subtraction. 
@@ -156,7 +211,7 @@ public:
         return lhs;
     }
 
-    // --- Scalar Multiplication
+    // --- Multiplication ---
 
     /** @brief In-place scalar multiplication. */
     Matrix& operator*=(const T& scalar) {
@@ -177,8 +232,6 @@ public:
     friend Matrix operator*(const T& scalar, const Matrix& m) {
         return m * scalar;
     }
-
-    // --- Matrix Multiplication ---
 
     /**
      * @brief Performs matrix multiplication using the most efficient algorithm available.
@@ -204,6 +257,70 @@ public:
         }
         return result;
     }
+
+    Matrix<T> operator>(const T& threshold) const {
+        Matrix<T> res(num_rows, num_cols);
+        const T* src = this->data_ptr();
+        T* dst = res.data_ptr();
+        size_t total = num_rows * num_cols;
+
+        for (size_t i = 0; i < total; ++i) {
+            dst[i] = (src[i] > threshold) ? static_cast<T>(1) : static_cast<T>(0);
+        }
+        return res;
+    }
+
+    Matrix<T> operator<(const T& threshold) const {
+        Matrix<T> res(num_rows, num_cols);
+        const T* src = this->data_ptr();
+        T* dst = res.data_ptr();
+        size_t total = num_rows * num_cols;
+
+        for (size_t i = 0; i < total; ++i) {
+            dst[i] = (src[i] < threshold) ? static_cast<T>(1) : static_cast<T>(0);
+        }
+        return res;
+    }
+
+    Matrix<T> operator>=(const T& threshold) const {
+        Matrix<T> res(num_rows, num_cols);
+        const T* src = this->data_ptr();
+        T* dst = res.data_ptr();
+        size_t total = num_rows * num_cols;
+
+        for (size_t i = 0; i < total; ++i) {
+            dst[i] = (src[i] >= threshold) ? static_cast<T>(1) : static_cast<T>(0);
+        }
+        return res;
+    }
+
+    Matrix<T> operator<=(const T& threshold) const {
+        Matrix<T> res(num_rows, num_cols);
+        const T* src = this->data_ptr();
+        T* dst = res.data_ptr();
+        size_t total = num_rows * num_cols;
+
+        for (size_t i = 0; i < total; ++i) {
+            dst[i] = (src[i] <= threshold) ? static_cast<T>(1) : static_cast<T>(0);
+        }
+        return res;
+    }
+
+    /**
+     * @brief Checks if two matrices are equal.
+     * @return true if dimensions and all elements match, false otherwise.
+     */
+    bool operator==(const Matrix<T>& other) const {
+        if (data.size() != other.data.size()) return false;
+
+        return data == other.data;
+    }
+
+    /** @brief Checks if two matrices are not equal. */
+    bool operator!=(const Matrix<T>& other) const {
+        return !(*this == other);
+    }
+
 
     /**
      * @brief Computes the transpose of the matrix.

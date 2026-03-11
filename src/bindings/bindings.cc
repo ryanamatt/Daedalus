@@ -50,7 +50,7 @@ PYBIND11_MODULE(daedalus_cpp, m) {
     m.doc() = "Daedalus: A Machine Learning library";
 
     // --- Matrix Bindings ---
-    py::class_<Matrix<double>>(m, "Matrix")
+    py::class_<Matrix<double>>(m, "Matrix", py::buffer_protocol())
         .def(py::init<size_t, size_t>())
         .def("__getitem__", [](const Matrix<double> &self, py::object index_obj) -> py::object {
             // Check if the input is actually a tuple
@@ -113,17 +113,38 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def("__repr__", &Matrix<double>::to_string)
         .def_property_readonly("rows", &Matrix<double>::rows)
         .def_property_readonly("cols", &Matrix<double>::cols)
+        .def_buffer([](Matrix<double> &m) -> py::buffer_info {
+            return py::buffer_info(
+                m.data_ptr(),                               /* Pointer to buffer */
+                sizeof(double),                             /* Size of one element */
+                py::format_descriptor<double>::format(),    /* Python format (float) */
+                2,                                          /* Number of dimensions */
+                { m.rows(), m.cols() },                     /* Dimensions */
+                { sizeof(double) * m.cols(),                /* Stride for rows (byte offset to next row) */
+                sizeof(double) }                          /* Stride for cols (byte offset to next col) */
+            );
+        })
         .def("get_row", &Matrix<double>::get_row, py::arg("idx"))
+        .def("copy", &Matrix<double>::copy)
         .def("__call__", [](Matrix<double> &self, size_t r, size_t c) { return self(r, c); }, 
              py::arg("r"), py::arg("c"))
         .def("set", [](Matrix<double> &self, size_t r, size_t c, double val) { self(r, c) = val; }, 
              py::arg("r"), py::arg("c"), py::arg("val"))
-        .def("transpose", &Matrix<double>::transpose)
+        .def(py::self + double())      // Matrix + scalar
+        .def(double() + py::self)      // scalar + Matrix
+        .def(py::self += double())     // Matrix += scalar
         .def(py::self + py::self)
         .def(py::self - py::self)
         .def(py::self * py::self)
         .def(py::self * double())
-        .def(double() * py::self);
+        .def(double() * py::self)
+        .def(py::self > double())
+        .def(py::self < double())
+        .def(py::self >= double())
+        .def(py::self <= double())
+        .def(py::self == py::self)
+        .def(py::self != py::self)
+        .def("transpose", &Matrix<double>::transpose);
 
     // --- DataFrame Bindings ---
     py::class_<DataFrame>(m, "DataFrame")

@@ -29,9 +29,9 @@ def test_matrix_initialization():
     assert m_wide(0, 99) == 0.0 # Check last element
 
     # Invalid Dimensions (Negative)
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         Matrix(-1, 5)
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         Matrix(5, -1)
 
     # Large initialization (Sanity check for memory allocation)
