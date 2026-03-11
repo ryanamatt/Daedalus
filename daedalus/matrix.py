@@ -185,7 +185,7 @@ class Matrix:
     
     def __repr__(self) -> str:
         """Returns a string representation of the matrix."""
-        return self._obj.__repr__()
+        return self._obj.to_string()
     
     def __iter__(self) -> typing.Iterator[Matrix]:
         """Allows iteration over the rows of the matrix."""

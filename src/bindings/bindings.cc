@@ -110,7 +110,7 @@ PYBIND11_MODULE(daedalus_cpp, m) {
 
             self(r, c) = value;
         })
-        .def("__repr__", &Matrix<double>::to_string)
+        .def("to_string", &Matrix<double>::to_string)
         .def_property_readonly("rows", &Matrix<double>::rows)
         .def_property_readonly("cols", &Matrix<double>::cols)
         .def_buffer([](Matrix<double> &m) -> py::buffer_info {
@@ -159,7 +159,7 @@ PYBIND11_MODULE(daedalus_cpp, m) {
             py::arg("row"), py::arg("col_name"))
         .def("at", py::overload_cast<size_t, size_t>(&DataFrame::at, py::const_), 
             py::arg("row"), py::arg("col"))
-        .def("__repr__", &DataFrame::to_string)
+        .def("to_string", &DataFrame::to_string)
         .def("head", &DataFrame::head, py::arg("n") = 5, "Returns the first n rows of the DataFrame.")
         .def("add_column", &DataFrame::add_column, py::arg("name"), py::arg("col_data"))
         .def("drop_column", &DataFrame::drop_column, py::arg("name"))

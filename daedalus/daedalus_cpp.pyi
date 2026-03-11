@@ -14,8 +14,6 @@ class DataFrame:
         """
         Constructs a DataFrame with an initial column.
         """
-    def __repr__(self) -> str:
-        ...
     def add_column(self, name: str, col_data: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex | typing.SupportsInt | typing.SupportsIndex | str]) -> None:
         ...
     @typing.overload
@@ -39,6 +37,8 @@ class DataFrame:
         Returns the first n rows of the DataFrame.
         """
     def to_matrix(self, target_columns: collections.abc.Sequence[str]) -> Matrix:
+        ...
+    def to_string(self) -> str:
         ...
     @property
     def cols(self) -> int:
@@ -129,8 +129,6 @@ class Matrix:
         """
         Release the buffer object that exposes the underlying memory of the object.
         """
-    def __repr__(self) -> str:
-        ...
     def __rmul__(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> Matrix:
         ...
     def __setitem__(self, arg0: tuple, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
@@ -142,6 +140,8 @@ class Matrix:
     def get_row(self, idx: typing.SupportsInt | typing.SupportsIndex) -> Matrix:
         ...
     def set(self, r: typing.SupportsInt | typing.SupportsIndex, c: typing.SupportsInt | typing.SupportsIndex, val: typing.SupportsFloat | typing.SupportsIndex) -> None:
+        ...
+    def to_string(self) -> str:
         ...
     def transpose(self) -> Matrix:
         ...

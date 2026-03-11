@@ -6,7 +6,9 @@ def test_dataframe_initialization():
     """Verify DataFrame initializaes correctly"""
     df1 = DataFrame()
 
-    assert df1
+    assert isinstance(df1, DataFrame) 
+    assert df1.rows == 0
+    assert df1.cols == 0
 
     df2 = DataFrame('Test', [1])
     assert df2

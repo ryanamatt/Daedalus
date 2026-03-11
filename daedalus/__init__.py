@@ -1,5 +1,6 @@
-from .daedalus_cpp import DataFrame, read_csv
+from .daedalus_cpp import read_csv
 from .matrix import Matrix
+from .dataframe import DataFrame
 
 from . import models
 from . import metrics
