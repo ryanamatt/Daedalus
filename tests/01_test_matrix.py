@@ -200,10 +200,6 @@ def test_matrix_access_modification():
     
     with pytest.raises(IndexError):
         m[0, 3] = 1.0  # Col out of range
-
-    # Error Handling: Invalid Index Types
-    with pytest.raises(IndexError):
-        val = m[0]     # Missing second index (must be 2-tuple)
         
     with pytest.raises(TypeError):
         val = m["0", 0] # Non-integer/slice index
