@@ -1,3 +1,4 @@
+# Linguist Overrides: Ignore Tests and Examples in Language Stats
 tests/* linguist-documentation=false
 tests/* linguist-vendored=true
 examples/* linguist-documentation=false
@@ -5,11 +6,17 @@ examples/* linguist-vendored=true
 
 text=auto
 
-*.cc text
-*.h text
+*.cc text diff=cpp
+*.h text diff=cpp
+
 *.py text
-*.pyi text
+*.pyi linguist-generated=true
 *.toml text
 *.md text
+Doxyfile text
 
 *.csv=binary
+*.png binary
+*.jpg binary
+
+extern/* linguist-vendored=true
