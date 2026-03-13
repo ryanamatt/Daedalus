@@ -29,6 +29,21 @@ def test_benchmark_multiplication(benchmark, size):
     
     assert result.rows == size
 
+@pytest.mark.parametrize("size", [512, 1024, 2048]) # The "Challenge" sizes
+def test_benchmark_multiplication_heavy(benchmark, size):
+    """Benchmarks O(n^3) Matrix Multiplication with large Matrics."""
+    # Create two random matrices
+    a_np = np.random.rand(size, size)
+    b_np = np.random.rand(size, size)
+    
+    a = from_numpy(a_np)
+    b = from_numpy(b_np)
+    
+    # The benchmark fixture runs the lambda multiple times to get an average
+    result = benchmark(lambda: a * b)
+    
+    assert result.rows == size
+
 @pytest.mark.parametrize("size", [128, 512, 1024])
 def test_benchmark_transpose(benchmark, size):
     """Benchmarks the Tiled Transpose implementation."""

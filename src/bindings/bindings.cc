@@ -136,6 +136,7 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def(py::self + py::self)
         .def(py::self - py::self)
         .def(py::self * py::self)
+        .def("multiply_tiled", &Matrix<double>::multiply_tiled, py::arg("other"))
         .def(py::self * double())
         .def(double() * py::self)
         .def(py::self > double())

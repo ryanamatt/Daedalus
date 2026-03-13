@@ -241,7 +241,10 @@ class Matrix:
         """Matrix multiplication or scalar multiplication."""
         res = Matrix(0, 0)
         if isinstance(other, Matrix):
-            res._obj = self._obj * other._obj
+            if self.rows >= 1024 and other.cols >= 1024:
+                res._obj = self._obj.multiply_tiled(other)
+            else:
+                res._obj = self._obj * other._obj
         else:
             res._obj = self._obj * float(other)
         return res

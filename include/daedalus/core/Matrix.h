@@ -258,6 +258,37 @@ public:
         return result;
     }
 
+    /**
+     * @brief Performs matrix multiplication using the most efficient algorithm available.
+     * * @section Multiplication Heuristics:
+     * - Uses Cache-friendly standard multiplication ($O(n^3)$) otherwise. Uses a tiled approach
+     * and is for large matrices N > 1024.
+     * @param other The right-hand side matrix.
+     * @return Matrix Result of (this * other).
+     */
+    Matrix multiply_tiled(const Matrix& other) const {
+        Matrix result(num_rows, other.num_cols);
+        const size_t block_size = 32; // Optimized for L1 cache size
+
+        for (size_t i0 = 0; i0 < num_rows; i0 += block_size) {
+            for (size_t k0 = 0; k0 < num_cols; k0 += block_size) {
+                for (size_t j0 = 0; j0 < other.num_cols; j0 += block_size) {
+
+                    // Inner mini-matrix multiplication ('Tile')
+                    for (size_t i = i0; i < std::min(i0 + block_size, num_rows); ++i) {
+                        for (size_t k = k0; k < std::min(k0 + block_size, num_cols); ++k) {
+                            T temp = (*this)(i, k);
+                            for (size_t j = j0; j < std::min(j0 + block_size, other.num_cols); ++j) {
+                                result(i, j) += temp * other(k, j);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     Matrix<T> operator>(const T& threshold) const {
         Matrix<T> res(num_rows, num_cols);
         const T* src = this->data_ptr();
