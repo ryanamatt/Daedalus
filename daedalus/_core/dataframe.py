@@ -1,6 +1,6 @@
 from __future__ import annotations
 import typing
-from .daedalus_cpp import DataFrame as _DataFrameCpp
+from ..daedalus_cpp import DataFrame as _DataFrameCpp
 
 class DataFrame:
     """

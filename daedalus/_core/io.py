@@ -1,6 +1,6 @@
 import os
-from .daedalus_cpp import read_csv as read_csv_cpp
-from .daedalus_cpp import DataFrame
+from ..daedalus_cpp import read_csv as read_csv_cpp
+from ..daedalus_cpp import DataFrame
 
 def read_csv(filename: str, has_header: bool = True) -> DataFrame:
     """

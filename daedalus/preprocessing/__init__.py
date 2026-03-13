@@ -1,4 +1,4 @@
-from .daedalus_cpp import (
+from ..daedalus_cpp import (
     StandardScaler
 )
 

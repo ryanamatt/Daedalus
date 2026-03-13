@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing
 import numpy as np
-from .daedalus_cpp import Matrix as _MatrixCpp
+from ..daedalus_cpp import Matrix as _MatrixCpp
 
 class Matrix:
     """

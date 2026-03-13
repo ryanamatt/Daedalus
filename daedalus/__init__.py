@@ -1,9 +1,13 @@
-from .matrix import Matrix
-from .dataframe import DataFrame
+# daedalus/__init__.py
+import sys
 
-from .io import read_csv
+from ._core.matrix import Matrix
+from ._core.dataframe import DataFrame
+from ._core.io import read_csv
 
-from . import models
-from . import metrics
-from . import preprocessing
-from . import model_selection
+__all__ = ['Matrix', 'DataFrame', 'read_csv']
+
+if f"{__name__}._core" in sys.modules:
+    del sys.modules[f"{__name__}._core"]
+
+del sys.modules("_core")
