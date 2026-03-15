@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 from ..daedalus_cpp import read_csv as read_csv_cpp
 from ..daedalus_cpp import DataFrame
