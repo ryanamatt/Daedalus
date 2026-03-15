@@ -1,4 +1,5 @@
 # daedalus/__init__.py
+
 import sys
 
 from ._core.matrix import Matrix
