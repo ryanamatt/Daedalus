@@ -9,7 +9,7 @@
 #include "daedalus/core/IO.h"
 #include "daedalus/core/Preprocessing.h"
 #include "daedalus/core/Metrics.h"
-#include "daedalus/core/Utils.h"
+#include "daedalus/core/ModelSelection.h"
 #include "daedalus/models/linearRegression.h"
 #include "daedalus/models/logisticRegression.h"
 #include "daedalus/models/knn.h"
