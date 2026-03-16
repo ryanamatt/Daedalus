@@ -15,9 +15,10 @@ text=auto
 *.md text
 Doxyfile text
 
+tools/* linguist-documentation=false
+tools/* linguist-vendored=false
 *.sh text eol=lf
 *.ps1 text eolf=crlf
-tools/* linguist-documentation=false
 
 *.csv=binary
 *.png binary
