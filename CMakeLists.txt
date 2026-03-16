@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 3.15)
 project(daedalus LANGUAGES CXX)
 
+if(SKBUILD_PROJECT_VERSION)
+    set(FULL_VERSION_STR ${SKBUILD_PROJECT_VERSION})
+else()
+    set(FULL_VERSION_STR "0.0.0-dev")
+endif()
+
+add_definitions(-DDAEDALUS_VERSION="${FULL_VERSION_STR}")
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 

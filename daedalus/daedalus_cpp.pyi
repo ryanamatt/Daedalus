@@ -212,3 +212,4 @@ def train_test_split(X: Matrix, y: Matrix, test_size: typing.SupportsFloat | typ
     """
     Splits features and targets into training and testing sets.
     """
+__version__: str = '0.1'

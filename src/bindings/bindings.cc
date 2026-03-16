@@ -49,6 +49,8 @@ public:
 PYBIND11_MODULE(daedalus_cpp, m) {
     m.doc() = "Daedalus: A Machine Learning library";
 
+    m.attr("__version__") = DAEDALUS_VERSION;
+
     // --- Matrix Bindings ---
     py::class_<Matrix<double>>(m, "Matrix", py::buffer_protocol())
         .def(py::init<size_t, size_t>())
