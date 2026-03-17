@@ -8,7 +8,7 @@ namespace optimization {
 
 void SimplexSolver::build_tableau(const Matrix<double>& A, const Matrix<double>& b, const Matrix<double>& c) {
     num_constraints = A.rows();
-    num_vars = c.rows(); // c is usually a column vector (n x 1)
+    num_vars = (c.rows() > c.cols()) ? c.rows() : c.cols();
 
     // Tableau size: (constraints + 1) rows x (vars + slack + 1) columns
     tableau = Matrix<double>(num_constraints + 1, num_vars + num_constraints + 1);
@@ -27,7 +27,8 @@ void SimplexSolver::build_tableau(const Matrix<double>& A, const Matrix<double>&
     // 4. Fill Objective Function Row (Bottom row)
     // We use -c because we move variables to the left side: z - cx = 0
     for (size_t j = 0; j < num_vars; ++j) {
-        tableau(num_constraints, j) = -c(j, 0);
+        double c_val = (c.rows() > c.cols()) ? c(j, 0) : c(0, j);
+        tableau(num_constraints, j) = -c_val;
     }
 }
 
@@ -88,7 +89,6 @@ OptimizationResult SimplexSolver::solve(const Matrix<double>& A, const Matrix<do
         Matrix<double>(num_vars, 1), 
         tableau(num_constraints, tableau.cols() - 1),
         SolutionStatus::OPTIMAL,
-        ""
     };
 
     // Basic variables extraction (check for columns that are unit vectors)

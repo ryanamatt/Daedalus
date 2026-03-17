@@ -279,8 +279,7 @@ PYBIND11_MODULE(daedalus_cpp, m) {
     py::class_<OptimizationResult>(m, "OptimizationResult")
         .def_readonly("x", &OptimizationResult::x)
         .def_readonly("objective_value", &OptimizationResult::objective_value)
-        .def_readonly("status", &OptimizationResult::status)
-        .def_readonly("message", &OptimizationResult::message);
+        .def_readonly("status", &OptimizationResult::status);
 
     py::class_<SimplexSolver>(m, "SimplexSolver")
         .def(py::init<>())

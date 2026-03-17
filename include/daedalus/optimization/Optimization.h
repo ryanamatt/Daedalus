@@ -20,7 +20,6 @@ namespace optimization {
         Matrix<double> x;            // Optimal variable values
         double objective_value;      // Max/Min value of z
         SolutionStatus status;
-        std::string message;
     };
 
 } // namespace optimization

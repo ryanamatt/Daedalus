@@ -185,9 +185,6 @@ class NeuralNetwork(Model):
         ...
 class OptimizationResult:
     @property
-    def message(self) -> str:
-        ...
-    @property
     def objective_value(self) -> float:
         ...
     @property
