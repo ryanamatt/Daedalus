@@ -32,7 +32,7 @@ private:
     }
 
 public:
-/**
+    /**
      * @brief Constructs a Logistic Regression classifier.
      * @param learning_rate Step size for gradient descent.
      * @param lambda Regularization strength.
@@ -57,10 +57,10 @@ public:
     Matrix<double> predict_proba(const Matrix<double>& X) const;
 
     /** @brief Saves model parameters to a file. */
-    void LogisticRegression::saveModel(const std::string& filename) const;
+    void saveModel(const std::string& filename) const;
 
     /** @brief Loads model parameters from a file. */
-    void LogisticRegression::loadModel(const std::string& filename);
+    void loadModel(const std::string& filename);
 };
 
 #endif // LOGREG_H
