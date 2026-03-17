@@ -21,6 +21,7 @@ pybind11_add_module(daedalus_cpp
     src/models/knn.cc
     src/models/DenseLayer.cc
     src/models/NeuralNetwork.cc
+    src/optimization/SimplexSolver.cc
 )
 
 set_target_properties(daedalus_cpp PROPERTIES 

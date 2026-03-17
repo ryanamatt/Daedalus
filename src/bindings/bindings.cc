@@ -15,6 +15,8 @@
 #include "daedalus/models/knn.h"
 #include "daedalus/models/DenseLayer.h"
 #include "daedalus/models/NeuralNetwork.h"
+#include "daedalus/optimization/Optimization.h"
+#include "daedalus/optimization/SimplexSolver.h"
 
 namespace py = pybind11;
 
@@ -132,6 +134,9 @@ PYBIND11_MODULE(daedalus_cpp, m) {
              py::arg("r"), py::arg("c"))
         .def("set", [](Matrix<double> &self, size_t r, size_t c, double val) { self(r, c) = val; }, 
              py::arg("r"), py::arg("c"), py::arg("val"))
+        .def("scale_row", &Matrix<double>::scale_row, py::arg("row_idx"), py::arg("scalar"))
+        .def("add_scaled_row", &Matrix<double>::add_scaled_row, py::arg("src_idx"), py::arg("dest_idx"), py::arg("scalar"))
+        .def("swap_rows", &Matrix<double>::swap_rows, py::arg("r1"), py::arg("r2"))
         .def(py::self + double())      // Matrix + scalar
         .def(double() + py::self)      // scalar + Matrix
         .def(py::self += double())     // Matrix += scalar
@@ -260,4 +265,26 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def("fit", py::overload_cast<const Matrix<double>&, const Matrix<double>&, int>(&NeuralNetwork::fit),
              py::arg("X"), py::arg("y"), py::arg("epochs"))
         .def("predict", &NeuralNetwork::predict, py::arg("X"));
+
+    // --- Optimization Bindings ---
+    using namespace daedalus::optimization;
+    
+    py::enum_<SolutionStatus>(m, "SolutionStatus")
+        .value("OPTIMAL", SolutionStatus::OPTIMAL)
+        .value("INFEASIBLE", SolutionStatus::INFEASIBLE)
+        .value("UNBOUNDED", SolutionStatus::UNBOUNDED)
+        .value("ERROR", SolutionStatus::ERROR)
+        .export_values();
+
+    py::class_<OptimizationResult>(m, "OptimizationResult")
+        .def_readonly("x", &OptimizationResult::x)
+        .def_readonly("objective_value", &OptimizationResult::objective_value)
+        .def_readonly("status", &OptimizationResult::status)
+        .def_readonly("message", &OptimizationResult::message);
+
+    py::class_<SimplexSolver>(m, "SimplexSolver")
+        .def(py::init<>())
+        .def("solve", &SimplexSolver::solve, 
+             py::arg("A"), py::arg("b"), py::arg("c"),
+             "Solves LP: Maximize c*x subject to Ax <= b, x >= 0");
 }

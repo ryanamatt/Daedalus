@@ -4,7 +4,7 @@ Daedalus: A Machine Learning library
 from __future__ import annotations
 import collections.abc
 import typing
-__all__: list[str] = ['DataFrame', 'KNN', 'LinearRegression', 'LogisticRegression', 'Matrix', 'Model', 'NeuralNetwork', 'StandardScaler', 'accuracy_score', 'confusion_matrix', 'f1_score', 'mcc_score', 'mean_squared_error', 'precision_score', 'r2_score', 'read_csv', 'recall_score', 'train_test_split']
+__all__: list[str] = ['DataFrame', 'ERROR', 'INFEASIBLE', 'KNN', 'LinearRegression', 'LogisticRegression', 'Matrix', 'Model', 'NeuralNetwork', 'OPTIMAL', 'OptimizationResult', 'SimplexSolver', 'SolutionStatus', 'StandardScaler', 'UNBOUNDED', 'accuracy_score', 'confusion_matrix', 'f1_score', 'mcc_score', 'mean_squared_error', 'precision_score', 'r2_score', 'read_csv', 'recall_score', 'train_test_split']
 class DataFrame:
     @typing.overload
     def __init__(self) -> None:
@@ -135,13 +135,19 @@ class Matrix:
         ...
     def __sub__(self, arg0: Matrix) -> Matrix:
         ...
+    def add_scaled_row(self, src_idx: typing.SupportsInt | typing.SupportsIndex, dest_idx: typing.SupportsInt | typing.SupportsIndex, scalar: typing.SupportsFloat | typing.SupportsIndex) -> None:
+        ...
     def copy(self) -> Matrix:
         ...
     def get_row(self, idx: typing.SupportsInt | typing.SupportsIndex) -> Matrix:
         ...
     def multiply_tiled(self, other: Matrix) -> Matrix:
         ...
+    def scale_row(self, row_idx: typing.SupportsInt | typing.SupportsIndex, scalar: typing.SupportsFloat | typing.SupportsIndex) -> None:
+        ...
     def set(self, r: typing.SupportsInt | typing.SupportsIndex, c: typing.SupportsInt | typing.SupportsIndex, val: typing.SupportsFloat | typing.SupportsIndex) -> None:
+        ...
+    def swap_rows(self, r1: typing.SupportsInt | typing.SupportsIndex, r2: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def to_string(self) -> str:
         ...
@@ -176,6 +182,69 @@ class NeuralNetwork(Model):
     def fit(self, X: Matrix, y: Matrix, epochs: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def predict(self, X: Matrix) -> Matrix:
+        ...
+class OptimizationResult:
+    @property
+    def message(self) -> str:
+        ...
+    @property
+    def objective_value(self) -> float:
+        ...
+    @property
+    def status(self) -> SolutionStatus:
+        ...
+    @property
+    def x(self) -> Matrix:
+        ...
+class SimplexSolver:
+    def __init__(self) -> None:
+        ...
+    def solve(self, A: Matrix, b: Matrix, c: Matrix) -> OptimizationResult:
+        """
+        Solves LP: Maximize c*x subject to Ax <= b, x >= 0
+        """
+class SolutionStatus:
+    """
+    Members:
+    
+      OPTIMAL
+    
+      INFEASIBLE
+    
+      UNBOUNDED
+    
+      ERROR
+    """
+    ERROR: typing.ClassVar[SolutionStatus]  # value = <SolutionStatus.ERROR: 3>
+    INFEASIBLE: typing.ClassVar[SolutionStatus]  # value = <SolutionStatus.INFEASIBLE: 1>
+    OPTIMAL: typing.ClassVar[SolutionStatus]  # value = <SolutionStatus.OPTIMAL: 0>
+    UNBOUNDED: typing.ClassVar[SolutionStatus]  # value = <SolutionStatus.UNBOUNDED: 2>
+    __members__: typing.ClassVar[dict[str, SolutionStatus]]  # value = {'OPTIMAL': <SolutionStatus.OPTIMAL: 0>, 'INFEASIBLE': <SolutionStatus.INFEASIBLE: 1>, 'UNBOUNDED': <SolutionStatus.UNBOUNDED: 2>, 'ERROR': <SolutionStatus.ERROR: 3>}
+    def __eq__(self, other: typing.Any) -> bool:
+        ...
+    def __getstate__(self) -> int:
+        ...
+    def __hash__(self) -> int:
+        ...
+    def __index__(self) -> int:
+        ...
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
+        ...
+    def __int__(self) -> int:
+        ...
+    def __ne__(self, other: typing.Any) -> bool:
+        ...
+    def __repr__(self) -> str:
+        ...
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
+        ...
+    def __str__(self) -> str:
+        ...
+    @property
+    def name(self) -> str:
+        ...
+    @property
+    def value(self) -> int:
         ...
 class StandardScaler:
     def __init__(self) -> None:
@@ -212,4 +281,8 @@ def train_test_split(X: Matrix, y: Matrix, test_size: typing.SupportsFloat | typ
     """
     Splits features and targets into training and testing sets.
     """
+ERROR: SolutionStatus  # value = <SolutionStatus.ERROR: 3>
+INFEASIBLE: SolutionStatus  # value = <SolutionStatus.INFEASIBLE: 1>
+OPTIMAL: SolutionStatus  # value = <SolutionStatus.OPTIMAL: 0>
+UNBOUNDED: SolutionStatus  # value = <SolutionStatus.UNBOUNDED: 2>
 __version__: str = '0.1'

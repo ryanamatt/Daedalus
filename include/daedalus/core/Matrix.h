@@ -127,6 +127,35 @@ public:
         return result;
     }
 
+    /** @brief Multiples an entire row by a scalar constant. */
+    void scale_row(size_t row_idx, T scalar) {
+        if (row_idx >= num_rows) throw std::out_of_range("Row index out of bounds.");
+        for (size_t j = 0; j < num_cols; ++j) {
+            (*this)(row_idx, j) *= scalar;
+        }
+    }
+
+    /** * @brief Adds a multiple of one row to another row.
+     * Equation: row_dest = row_dest + (row_src * scalar)
+     */
+    void add_scaled_row(size_t src_idx, size_t dest_idx, T scalar) {
+        if (src_idx >= num_rows || dest_idx >= num_rows) {
+            throw std::out_of_range("Row index out of bounds.");
+        }
+        for (size_t j = 0; j < num_cols; ++j) {
+            (*this)(dest_idx, j) += (*this)(src_idx, j) * scalar;
+        }
+    }
+
+    /** @brief Swaps two rows in the matrix. */
+    void swap_rows(size_t r1, size_t r2) {
+        if (r1 >= num_rows || r2 >= num_rows) throw std::out_of_range("Row index out of bounds.");
+        if (r1 == r2) return;
+        for (size_t j = 0; j < num_cols; ++j) {
+            std::swap((*this)(r1, j), (*this)(r2, j));
+        }
+    }
+
     // --- Standard Operators ---
 
     // --- Addition ---

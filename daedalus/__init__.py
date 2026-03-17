@@ -7,6 +7,8 @@ from ._core.matrix import Matrix
 from ._core.dataframe import DataFrame
 from ._core.io import read_csv
 
+from .daedalus_cpp import SimplexSolver, SolutionStatus, OptimizationResult
+
 __all__ = ['Matrix', 'DataFrame', 'read_csv']
 
 if f"{__name__}._core" in sys.modules:
