@@ -242,7 +242,7 @@ class Matrix:
         res = Matrix(0, 0)
         if isinstance(other, Matrix):
             if self.rows >= 1024 and other.cols >= 1024:
-                res._obj = self._obj.multiply_tiled(other)
+                res._obj = self._obj.multiply_tiled(other._obj)
             else:
                 res._obj = self._obj * other._obj
         else:
@@ -313,8 +313,12 @@ class Matrix:
 
     def __eq__(self, other: Matrix) -> bool:
         """Checks if two matrices are equal."""
-        return self._obj == other
+        if not isinstance(other, Matrix):
+            return False
+        return self._obj == other._obj
     
     def __ne__(self, other: Matrix) -> bool:
         """Checks if two matrices are not equal."""
-        return self._obj != other
+        if not isinstance(other, Matrix):
+            return True
+        return self._obj != other._obj

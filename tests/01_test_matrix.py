@@ -1,441 +1,572 @@
+"""
+test_matrix.py
+==============
+Full-coverage test suite for the Matrix Python wrapper class (daedalus/_core/matrix.py).
+
+Run:
+    pytest tests/01_test_matrix.py
+
+    or run all  tests by
+    
+    pytest
+"""
+
+from __future__ import annotations
 import pytest
+import numpy as np
 from daedalus import Matrix
 
-def test_matrix_initialization():
-    """Verify matrix initialization, default values, and boundary constraints."""
-    rows, cols = 10, 5
-    m1 = Matrix(rows, cols)
-    assert m1.rows == rows
-    assert m1.cols == cols
-    
-    # Verify all elements are 0.0 (Value-initialization check)
-    for i in range(rows):
-        for j in range(cols):
-            assert m1(i, j) == 0.0 
-            assert m1[i, j] == 0.0
-
-    # Empty/Zero-sized matrix
-    m2 = Matrix(0, 0)
-    assert m2.rows == 0
-    assert m2.cols == 0
-
-    # Non-square "Vector-like" matrices
-    m_tall = Matrix(100, 1)
-    assert m_tall.rows == 100 and m_tall.cols == 1
-    assert m_tall(99, 0) == 0.0 # Check last element
-
-    m_wide = Matrix(1, 100)
-    assert m_wide.rows == 1 and m_wide.cols == 100
-    assert m_wide(0, 99) == 0.0 # Check last element
-
-    # Invalid Dimensions (Negative)
-    with pytest.raises(ValueError):
-        Matrix(-1, 5)
-    with pytest.raises(ValueError):
-        Matrix(5, -1)
-
-    # Large initialization (Sanity check for memory allocation)
-    m_large = Matrix(1000, 1000)
-    assert m_large.rows == 1000
-    assert m_large[999, 999] == 0.0
-
-def test_matrix_repr():
-    """Verify that the string representation matches the expected C++ output format."""
-    # Test a small 2x2 matrix
-    m = Matrix(2, 2)
-    m[0, 0] = 1.1
-    m[0, 1] = 2.2
-    m[1, 0] = 3.3
-    m[1, 1] = 4.4
-    
-    expected_repr = (
-        "Matrix(2x2) [\n"
-        "  [1.1, 2.2],\n"
-        "  [3.3, 4.4]\n"
-        "]"
-    )
-    assert repr(m) == expected_repr
-
-    # Test a single element matrix (1x1)
-    m_single = Matrix(1, 1)
-    m_single[0, 0] = 5.0
-    expected_single = (
-        "Matrix(1x1) [\n"
-        "  [5]\n"
-        "]"
-    )
-    assert expected_single == repr(m_single)
-
-    # Test an empty matrix
-    m_empty = Matrix(0, 0)
-    assert "Matrix(0x0) [\n\n]" == repr(m_empty)
-
-import pytest
-from daedalus import Matrix
-
-def test_matrix_dimensions():
-    """Verify that rows and cols properties correctly report matrix dimensions."""
-    # Test standard rectangular matrix
-    m1 = Matrix(10, 5)
-    assert m1.rows == 10
-    assert m1.cols == 5
-
-    # Test square matrix
-    m2 = Matrix(100, 100)
-    assert m2.rows == 100
-    assert m2.cols == 100
-
-    # Test vector shapes
-    m_row = Matrix(1, 50)
-    assert m_row.rows == 1
-    assert m_row.cols == 50
-
-    m_col = Matrix(50, 1)
-    assert m_col.rows == 50
-    assert m_col.cols == 1
-
-    # Test empty matrix
-    m_empty = Matrix(0, 0)
-    assert m_empty.rows == 0
-    assert m_empty.cols == 0
-
-    # Verify dimensions remain unchanged after data modification
-    m1[0, 0] = 99.9
-    assert m1.rows == 10
-    assert m1.cols == 5
-
-    # Verify properties are read-only
-    with pytest.raises(AttributeError):
-        m1.rows = 20
-    with pytest.raises(AttributeError):
-        m1.cols = 10
-
-def test_matrix_get_row():
-    """Verify row extraction data integrity, shape, and error handling."""
-    rows, cols = 3, 3
-    m = Matrix(rows, cols)
-    
-    # Fill matrix: 
-    # [0.0, 1.0, 2.0]
-    # [3.0, 4.0, 5.0]
-    # [6.0, 7.0, 8.0]
-    counter = 0.0
-    for i in range(rows):
-        for j in range(cols):
-            m[i, j] = counter
-            counter += 1.0
-
-    row1 = m.get_row(1)
-    
-    # Check dimensions: Should be (1, cols)
-    assert row1.rows == 1
-    assert row1.cols == 3
-    
-    # Check data integrity
-    assert row1[0, 0] == 3.0
-    assert row1[0, 1] == 4.0
-    assert row1[0, 2] == 5.0
-
-    # Verify extraction of the last row
-    row2 = m.get_row(2)
-    assert row2[0, 0] == 6.0
-    assert row2[0, 2] == 8.0
-
-    # Error Handling: Out of bounds
-    # The C++ code throws std::out_of_range for idx < 0 or idx >= num_rows
-    with pytest.raises(IndexError):
-        m.get_row(3)
-    
-    with pytest.raises(IndexError):
-        m.get_row(-1)
-
-    # Verify the returned row is a copy, not a view
-    row1[0, 0] = 99.0
-    assert m[1, 0] == 3.0
-
-def test_matrix_access_modification():
-    """Verify element access and modification via set, __call__, __getitem__, and __setitem__."""
-    m = Matrix(3, 3)
-
-    # Test .set() and __call__()
-    m.set(0, 0, 10.5)
-    m.set(2, 2, 20.5)
-    assert m(0, 0) == 10.5
-    assert m(2, 2) == 20.5
-
-    # Test __setitem__ and __getitem__ (Single Element)
-    m[0, 1] = 15.0
-    m[1, 1] = 25.0
-    assert m[0, 1] == 15.0
-    assert m[1, 1] == 25.0
-
-    # Test Negative Indexing in __setitem__
-    # bindings.cc handles negative r and c by adding self.rows() / self.cols()
-    m[-1, -1] = 99.0
-    assert m[2, 2] == 99.0
-    
-    m[-3, 0] = 55.0
-    assert m[0, 0] == 55.0
-
-    # Test Slicing via __getitem__
-    # Setup values:
-    # [[1, 2, 3],
-    #  [4, 5, 6],
-    #  [7, 8, 9]]
-    for i in range(3):
-        for j in range(3):
-            m[i, j] = float(i * 3 + j + 1)
-            
-    sub_matrix: Matrix = m[0:2, 1:3] # Rows 0,1 and Cols 1,2
-    assert sub_matrix.rows == 2
-    assert sub_matrix.cols == 2
-    assert sub_matrix[0, 0] == 2.0  # m[0, 1]
-    assert sub_matrix[0, 1] == 3.0  # m[0, 2]
-    assert sub_matrix[1, 0] == 5.0  # m[1, 1]
-    assert sub_matrix[1, 1] == 6.0  # m[1, 2]
-
-    # Error Handling: Out of Bounds
-    with pytest.raises(IndexError):
-        val = m[3, 0]  # Row out of range
-    
-    with pytest.raises(IndexError):
-        m[0, 3] = 1.0  # Col out of range
-        
-    with pytest.raises(TypeError):
-        val = m["0", 0] # Non-integer/slice index
-
-def test_matrix_addition():
-    """Verify element-wise addition and dimension mismatch handling."""
-    # 1. Standard 2x2 addition
-    m1 = Matrix(2, 2)
-    m1[0, 0], m1[0, 1] = 1.0, 2.0
-    m1[1, 0], m1[1, 1] = 3.0, 4.0
-
-    m2 = Matrix(2, 2)
-    m2[0, 0], m2[0, 1] = 10.0, 20.0
-    m2[1, 0], m2[1, 1] = 30.0, 40.0
-
-    result = m1 + m2
-    
-    # Check values
-    assert result[0, 0] == 11.0
-    assert result[0, 1] == 22.0
-    assert result[1, 0] == 33.0
-    assert result[1, 1] == 44.0
-
-    # Verify original matrices are not modified (Immutability check)
-    assert m1[0, 0] == 1.0
-    assert m2[0, 0] == 10.0
-
-    # Addition with a zero-initialized matrix
-    m_zero = Matrix(2, 2)
-    res_zero = m1 + m_zero
-    assert res_zero[0, 0] == 1.0
-    assert res_zero[1, 1] == 4.0
-
-    # Dimension Mismatch Handling
-    m_wrong_rows = Matrix(3, 2)
-    with pytest.raises(ValueError):
-        m1 + m_wrong_rows
-
-    m_wrong_cols = Matrix(2, 3)
-    with pytest.raises(ValueError):
-        m1 + m_wrong_cols
-
-    # Non-square addition (1x3)
-    m_row1 = Matrix(1, 3)
-    m_row2 = Matrix(1, 3)
-    m_row1[0, 0], m_row1[0, 1], m_row1[0, 2] = 1.0, 2.0, 3.0
-    m_row2[0, 0], m_row2[0, 1], m_row2[0, 2] = 4.0, 5.0, 6.0
-    
-    res_row = m_row1 + m_row2
-    assert res_row.rows == 1 and res_row.cols == 3
-    assert res_row[0, 2] == 9.0
-
-def test_matrix_subtraction():
-    """Verify element-wise subtraction and dimension mismatch handling."""
-    m1 = Matrix(2, 2)
-    m1[0, 0], m1[0, 1] = 10.0, 20.0
-    m1[1, 0], m1[1, 1] = 30.0, 40.0
-
-    m2 = Matrix(2, 2)
-    m2[0, 0], m2[0, 1] = 1.0, 2.0
-    m2[1, 0], m2[1, 1] = 3.0, 4.0
-
-    result = m1 - m2
-    
-    assert result[0, 0] == 9.0
-    assert result[0, 1] == 18.0
-    assert result[1, 0] == 27.0
-    assert result[1, 1] == 36.0
-
-    # Verify original matrices are not modified (Immutability check)
-    assert m1[0, 0] == 10.0
-    assert m2[0, 0] == 1.0
-
-    # Test subtraction resulting in negative values
-    m3 = Matrix(2, 2)
-    m3[0, 0] = 50.0
-    res_neg = m2 - m3
-    assert res_neg[0, 0] == -49.0
-
-    # Dimension Mismatch Handling
-    m_wrong_shape = Matrix(3, 2)
-    with pytest.raises(ValueError):
-        m1 - m_wrong_shape
-
-    # Subtraction with self
-    res_self = m1 - m1
-    for i in range(m1.rows):
-        for j in range(m1.cols):
-            assert res_self[i, j] == 0.0
-
-def test_matrix_scalar_multiplication():
-    """Verify scalar multiplication (matrix * scalar and scalar * matrix)."""
-    m = Matrix(2, 2)
-    m[0, 0], m[0, 1] = 1.0, 2.0
-    m[1, 0], m[1, 1] = 3.0, 4.0
-
-    # Test Matrix * Scalar
-    res1 = m * 2.5
-    assert res1[0, 0] == 2.5
-    assert res1[0, 1] == 5.0
-    assert res1[1, 0] == 7.5
-    assert res1[1, 1] == 10.0
-
-    # Test Scalar * Matrix
-    res2 = 3.0 * m
-    assert res2[0, 0] == 3.0
-    assert res2[0, 1] == 6.0
-    assert res2[1, 0] == 9.0
-    assert res2[1, 1] == 12.0
-
-    # Multiply by Negative Scalar
-    res_neg = m * -1.0
-    assert res_neg[0, 0] == -1.0
-    assert res_neg[1, 1] == -4.0
-
-    # Multiply by Zero
-    res_zero = m * 0.0
-    for i in range(m.rows):
-        for j in range(m.cols):
-            assert res_zero[i, j] == 0.0
-
-    # Immutability: Verify original matrix remains unchanged
-    assert m[0, 0] == 1.0
-    assert m[1, 1] == 4.0
-
-def test_matrix_multiplication():
-    """Verify matrix-matrix multiplication (dot product) and dimension validation."""
-    # Rectangular multiplication: (2x3) * (3x2) -> (2x2)
-    # [1, 2, 3]   [ 7,  8]    [ 58,  64]
-    # [4, 5, 6] * [ 9, 10] =  [139, 154]
-    #             [11, 12]
-    m1 = Matrix(2, 3)
-    m1[0, 0], m1[0, 1], m1[0, 2] = 1.0, 2.0, 3.0
-    m1[1, 0], m1[1, 1], m1[1, 2] = 4.0, 5.0, 6.0
-
-    m2 = Matrix(3, 2)
-    m2[0, 0], m2[0, 1] = 7.0, 8.0
-    m2[1, 0], m2[1, 1] = 9.0, 10.0
-    m2[2, 0], m2[2, 1] = 11.0, 12.0
-
-    result = m1 * m2
-
-    assert result.rows == 2
-    assert result.cols == 2
-    assert result[0, 0] == 58.0
-    assert result[0, 1] == 64.0
-    assert result[1, 0] == 139.0
-    assert result[1, 1] == 154.0
-
-    # Square matrix multiplication (Identity property check)
-    # [1, 2] * [1, 0] = [1, 2]
-    # [3, 4]   [0, 1]   [3, 4]
-    m_orig = Matrix(2, 2)
-    m_orig[0, 0], m_orig[0, 1] = 1.0, 2.0
-    m_orig[1, 0], m_orig[1, 1] = 3.0, 4.0
-
-    m_identity = Matrix(2, 2)
-    m_identity[0, 0], m_identity[1, 1] = 1.0, 1.0
-
-    res_id = m_orig * m_identity
-    assert res_id[0, 0] == 1.0
-    assert res_id[0, 1] == 2.0
-    assert res_id[1, 0] == 3.0
-    assert res_id[1, 1] == 4.0
-
-    # Dimension Mismatch Handling
-    # Matrix A (2x3) cannot be multiplied by Matrix C (2x2)
-    m_invalid = Matrix(2, 2)
-    with pytest.raises(ValueError): # std::invalid_argument maps to ValueError
-        m1 * m_invalid
-
-    # Vector Dot Product (1xN * Nx1 -> 1x1)
-    v1 = Matrix(1, 3)
-    v2 = Matrix(3, 1)
-    for i in range(3):
-        v1[0, i] = i + 1.0 # [1, 2, 3]
-        v2[i, 0] = i + 1.0 # [1, 2, 3]^T
-    
-    res_vec = v1 * v2
-    assert res_vec.rows == 1 and res_vec.cols == 1
-    assert res_vec[0, 0] == 14.0 # 1*1 + 2*2 + 3*3
-
-def test_matrix_transpose():
-    """Verify matrix transpose dimensions and data mapping."""
-    # Test 2x3 -> 3x2 transpose
-    # Original (2x3):
-    # [1.0, 2.0, 3.0]
-    # [4.0, 5.0, 6.0]
-    m = Matrix(2, 3)
-    m[0, 0], m[0, 1], m[0, 2] = 1.0, 2.0, 3.0
-    m[1, 0], m[1, 1], m[1, 2] = 4.0, 5.0, 6.0
-
-    m_t = m.transpose()
-
-    # Verify swapped dimensions
-    assert m_t.rows == 3
-    assert m_t.cols == 2
-    
-    # Verify values: Transposed (3x2):
-    # [1.0, 4.0]
-    # [2.0, 5.0]
-    # [3.0, 6.0]
-    assert m_t[0, 0] == 1.0
-    assert m_t[0, 1] == 4.0
-    assert m_t[1, 0] == 2.0
-    assert m_t[1, 1] == 5.0
-    assert m_t[2, 0] == 3.0
-    assert m_t[2, 1] == 6.0
-
-    # Verify original matrix is unchanged (Immutability check)
-    assert m.rows == 2
-    assert m.cols == 3
-    assert m[0, 1] == 2.0
-
-    # Test Row Vector (1x3) -> Column Vector (3x1)
-    v_row = Matrix(1, 3)
-    v_row[0, 0], v_row[0, 1], v_row[0, 2] = 10.0, 20.0, 30.0
-    v_col = v_row.transpose()
-    
-    assert v_col.rows == 3
-    assert v_col.cols == 1
-    assert v_col[0, 0] == 10.0
-    assert v_col[1, 0] == 20.0
-    assert v_col[2, 0] == 30.0
-
-    # Double transpose returns to original dimensions
-    m_back = m_t.transpose()
-    assert m_back.rows == 2
-    assert m_back.cols == 3
-    assert m_back[1, 2] == 6.0
-
-    # Test Square Matrix (2x2)
-    m_sq = Matrix(2, 2)
-    m_sq[0, 0], m_sq[0, 1] = 1.1, 2.2
-    m_sq[1, 0], m_sq[1, 1] = 3.3, 4.4
-    
-    m_sq_t = m_sq.transpose()
-    assert m_sq_t[0, 1] == 3.3
-    assert m_sq_t[1, 0] == 2.2
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def make_2x3() -> Matrix:
+    """Returns a 2x3 matrix [[1,2,3],[4,5,6]]."""
+    return Matrix([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+
+
+def make_3x2() -> Matrix:
+    """Returns a 3x2 matrix [[1,2],[3,4],[5,6]]."""
+    return Matrix([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+
+
+def make_2x2() -> Matrix:
+    """Returns a 2x2 identity-like matrix [[1,0],[0,1]]."""
+    return Matrix([[1.0, 0.0], [0.0, 1.0]])
+
+
+# ===========================================================================
+# 1. __init__ — construction paths
+# ===========================================================================
+
+class TestInit:
+
+    # --- (rows, cols) path ---
+
+    def test_init_by_dimensions_basic(self):
+        m = Matrix(3, 4)
+        assert m.rows == 3
+        assert m.cols == 4
+
+    def test_init_by_dimensions_zero_rows(self):
+        """0-row matrix is permitted (edge case used internally)."""
+        m = Matrix(0, 5)
+        assert m.rows == 0
+        assert m.cols == 5
+
+    def test_init_by_dimensions_zero_cols(self):
+        m = Matrix(5, 0)
+        assert m.rows == 5
+        assert m.cols == 0
+
+    def test_init_by_dimensions_zero_by_zero(self):
+        m = Matrix(0, 0)
+        assert m.rows == 0
+        assert m.cols == 0
+
+    def test_init_by_dimensions_negative_rows(self):
+        with pytest.raises(ValueError, match="dimensions must be positive"):
+            Matrix(-1, 3)
+
+    def test_init_by_dimensions_negative_cols(self):
+        with pytest.raises(ValueError, match="dimensions must be positive"):
+            Matrix(3, -1)
+
+    # --- list-of-lists path ---
+
+    def test_init_from_list_of_lists(self):
+        m = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        assert m.rows == 2
+        assert m.cols == 2
+        assert m(0, 0) == pytest.approx(1.0)
+        assert m(1, 1) == pytest.approx(4.0)
+
+    def test_init_from_list_1d_raises(self):
+        """A flat list is 1-D after np.array() conversion."""
+        with pytest.raises(ValueError, match="Expected 2D array"):
+            Matrix([1.0, 2.0, 3.0])
+
+    # --- numpy path ---
+
+    def test_init_from_numpy_2d(self):
+        arr = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+        m = Matrix(arr)
+        assert m.rows == 2
+        assert m.cols == 3
+        np.testing.assert_array_almost_equal(m.to_numpy(), arr)
+
+    def test_init_from_numpy_non_contiguous(self):
+        """Non-contiguous arrays (e.g. column-major views) are handled."""
+        arr = np.asfortranarray(np.ones((3, 3)))
+        m = Matrix(arr)
+        assert m.rows == 3
+
+    def test_init_from_numpy_3d_raises(self):
+        arr = np.ones((2, 3, 4))
+        with pytest.raises(ValueError, match="Expected 2D array"):
+            Matrix(arr)
+
+    def test_init_from_numpy_1d_raises(self):
+        arr = np.array([1.0, 2.0, 3.0])
+        with pytest.raises(ValueError, match="Expected 2D array"):
+            Matrix(arr)
+
+    # --- bad-type path ---
+
+    def test_init_wrong_single_arg_type(self):
+        with pytest.raises(TypeError, match="list of lists or a numpy.ndarray"):
+            Matrix("not a matrix")
+
+    def test_init_wrong_single_arg_int(self):
+        with pytest.raises(TypeError, match="list of lists or a numpy.ndarray"):
+            Matrix(42)
+
+    # --- bad-signature path ---
+
+    def test_init_no_args(self):
+        with pytest.raises(TypeError, match="Matrix constructor expects"):
+            Matrix()
+
+    def test_init_three_args(self):
+        with pytest.raises(TypeError, match="Matrix constructor expects"):
+            Matrix(2, 3, 4)
+
+    def test_init_two_non_int_args(self):
+        with pytest.raises(TypeError, match="Matrix constructor expects"):
+            Matrix("a", "b")
+
+
+# ===========================================================================
+# 2. Properties
+# ===========================================================================
+
+class TestProperties:
+
+    def test_rows(self):
+        assert Matrix(5, 3).rows == 5
+
+    def test_cols(self):
+        assert Matrix(5, 3).cols == 3
+
+    def test_shape(self):
+        assert Matrix(4, 7).shape == (4, 7)
+
+    def test_shape_matches_rows_and_cols(self):
+        m = make_2x3()
+        assert m.shape == (m.rows, m.cols)
+
+
+# ===========================================================================
+# 3. Static Methods
+# ===========================================================================
+
+class TestStaticMethods:
+
+    def test_random_uniform_default(self):
+        m = Matrix.random(4, 5)
+        assert m.rows == 4
+        assert m.cols == 5
+        arr = m.to_numpy()
+        assert arr.min() >= 0.0
+        assert arr.max() <= 1.0
+
+    def test_random_uniform_custom_range(self):
+        m = Matrix.random(10, 10, distribution="uniform", low=2.0, high=3.0)
+        arr = m.to_numpy()
+        assert arr.min() >= 2.0
+        assert arr.max() <= 3.0
+
+    def test_random_normal(self):
+        m = Matrix.random(100, 100, distribution="normal", loc=0.0, scale=1.0)
+        assert m.rows == 100
+        assert m.cols == 100
+
+    def test_random_normal_default_params(self):
+        """Normal distribution with no extra kwargs uses loc=0, scale=1."""
+        m = Matrix.random(50, 50, distribution="normal")
+        assert m.shape == (50, 50)
+
+    def test_random_unsupported_distribution(self):
+        with pytest.raises(ValueError, match="Unsupported distribution"):
+            Matrix.random(3, 3, distribution="poisson")
+
+
+# ===========================================================================
+# 4. Instance Methods
+# ===========================================================================
+
+class TestInstanceMethods:
+
+    def test_to_numpy(self):
+        data = [[1.0, 2.0], [3.0, 4.0]]
+        m = Matrix(data)
+        arr = m.to_numpy()
+        assert isinstance(arr, np.ndarray)
+        np.testing.assert_array_almost_equal(arr, np.array(data))
+
+    def test_transpose(self):
+        m = make_2x3()
+        t = m.transpose()
+        assert t.rows == 3
+        assert t.cols == 2
+        assert t(0, 0) == pytest.approx(m(0, 0))
+        assert t(2, 0) == pytest.approx(m(0, 2))
+        assert t(0, 1) == pytest.approx(m(1, 0))
+
+    def test_get_row(self):
+        m = make_2x3()
+        row = m.get_row(1)
+        assert row.rows == 1
+        assert row.cols == 3
+        assert row(0, 0) == pytest.approx(4.0)
+        assert row(0, 2) == pytest.approx(6.0)
+
+    def test_set(self):
+        m = Matrix(2, 2)
+        m.set(0, 1, 99.0)
+        assert m(0, 1) == pytest.approx(99.0)
+
+    def test_copy_independence(self):
+        m = make_2x2()
+        c = m.copy()
+        c.set(0, 0, 999.0)
+        assert m(0, 0) == pytest.approx(1.0)  # original unchanged
+
+
+# ===========================================================================
+# 5. Dunder — element access
+# ===========================================================================
+
+class TestDunderAccess:
+
+    def test_call_operator(self):
+        m = make_2x3()
+        assert m(0, 2) == pytest.approx(3.0)
+        assert m(1, 0) == pytest.approx(4.0)
+
+    def test_getitem_single_int_returns_row(self):
+        m = make_2x3()
+        row = m[0]
+        assert isinstance(row, Matrix)
+        assert row.rows == 1
+        assert row.cols == 3
+
+    def test_getitem_tuple_single_element(self):
+        m = make_2x3()
+        val = m[1, 2]
+        assert val == pytest.approx(6.0)
+
+    def test_getitem_tuple_slice_row(self):
+        m = make_2x3()
+        sub = m[0:1, 0:3]
+        assert isinstance(sub, Matrix)
+        assert sub.rows == 1
+        assert sub.cols == 3
+
+    def test_getitem_tuple_slice_submatrix(self):
+        m = Matrix([[1.0, 2.0, 3.0],
+                    [4.0, 5.0, 6.0],
+                    [7.0, 8.0, 9.0]])
+        sub = m[0:2, 1:3]
+        assert sub.rows == 2
+        assert sub.cols == 2
+        assert sub(0, 0) == pytest.approx(2.0)
+        assert sub(1, 1) == pytest.approx(6.0)
+
+    def test_setitem(self):
+        m = Matrix(3, 3)
+        m[1, 2] = 7.5
+        assert m(1, 2) == pytest.approx(7.5)
+
+    def test_len(self):
+        m = make_2x3()
+        assert len(m) == 2
+
+    def test_repr(self):
+        m = Matrix(2, 2)
+        r = repr(m)
+        assert "Matrix" in r
+        assert "2x2" in r
+
+    def test_iter(self):
+        m = make_2x3()
+        rows = list(m)
+        assert len(rows) == 2
+        for row in rows:
+            assert isinstance(row, Matrix)
+            assert row.cols == 3
+
+
+# ===========================================================================
+# 6. Arithmetic operators
+# ===========================================================================
+
+class TestArithmetic:
+
+    # --- Addition ---
+
+    def test_add_matrix(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        b = Matrix([[5.0, 6.0], [7.0, 8.0]])
+        c = a + b
+        np.testing.assert_array_almost_equal(c.to_numpy(), [[6, 8], [10, 12]])
+
+    def test_add_scalar(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        c = a + 10.0
+        np.testing.assert_array_almost_equal(c.to_numpy(), [[11, 12], [13, 14]])
+
+    def test_add_scalar_int(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        c = a + 1
+        assert c(0, 0) == pytest.approx(2.0)
+
+    def test_radd_scalar(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        c = 10.0 + a
+        np.testing.assert_array_almost_equal(c.to_numpy(), [[11, 12], [13, 14]])
+
+    def test_iadd_matrix(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        b = Matrix([[1.0, 1.0], [1.0, 1.0]])
+        a += b
+        assert a(0, 0) == pytest.approx(2.0)
+
+    def test_iadd_scalar(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        a += 5.0
+        assert a(0, 0) == pytest.approx(6.0)
+
+    def test_iadd_scalar_int(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        a += 2
+        assert a(0, 0) == pytest.approx(3.0)
+
+    # --- Subtraction ---
+
+    def test_sub_matrix(self):
+        a = Matrix([[5.0, 6.0], [7.0, 8.0]])
+        b = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        c = a - b
+        np.testing.assert_array_almost_equal(c.to_numpy(), [[4, 4], [4, 4]])
+
+    def test_sub_scalar(self):
+        a = Matrix([[5.0, 6.0], [7.0, 8.0]])
+        c = a - 1.0
+        np.testing.assert_array_almost_equal(c.to_numpy(), [[4, 5], [6, 7]])
+
+    def test_sub_scalar_int(self):
+        a = Matrix([[5.0, 6.0], [7.0, 8.0]])
+        c = a - 1
+        assert c(0, 0) == pytest.approx(4.0)
+
+    def test_isub_matrix(self):
+        a = Matrix([[5.0, 6.0], [7.0, 8.0]])
+        b = Matrix([[1.0, 1.0], [1.0, 1.0]])
+        a -= b
+        assert a(0, 0) == pytest.approx(4.0)
+
+    def test_isub_scalar(self):
+        a = Matrix([[5.0, 6.0], [7.0, 8.0]])
+        a -= 2.0
+        assert a(0, 0) == pytest.approx(3.0)
+
+    def test_isub_scalar_int(self):
+        a = Matrix([[5.0, 6.0], [7.0, 8.0]])
+        a -= 2
+        assert a(0, 0) == pytest.approx(3.0)
+
+    # --- Multiplication ---
+
+    def test_mul_matrix(self):
+        a = make_2x3()
+        b = make_3x2()
+        c = a * b
+        assert c.rows == 2
+        assert c.cols == 2
+
+    def test_mul_scalar(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        c = a * 2.0
+        np.testing.assert_array_almost_equal(c.to_numpy(), [[2, 4], [6, 8]])
+
+    def test_mul_scalar_int(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        c = a * 3
+        assert c(0, 0) == pytest.approx(3.0)
+
+    def test_rmul_scalar(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        c = 3.0 * a
+        np.testing.assert_array_almost_equal(c.to_numpy(), [[3, 6], [9, 12]])
+
+    def test_imul_scalar(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        a *= 2.0
+        assert a(0, 0) == pytest.approx(2.0)
+
+    def test_imul_scalar_int(self):
+        a = Matrix([[2.0, 4.0], [6.0, 8.0]])
+        a *= 2
+        assert a(0, 0) == pytest.approx(4.0)
+
+    def test_mul_large_uses_tiled(self):
+        """__mul__ switches to multiply_tiled when both dims >= 1024."""
+        a = Matrix.random(1024, 1024)
+        b = Matrix.random(1024, 1024)
+        c = a * b
+        assert c.rows == 1024
+        assert c.cols == 1024
+
+    def test_mul_medium_does_not_use_tiled(self):
+        """Below 1024 threshold, standard path is used."""
+        a = Matrix.random(512, 512)
+        b = Matrix.random(512, 512)
+        c = a * b
+        assert c.rows == 512
+        assert c.cols == 512
+
+    # --- Unary ---
+
+    def test_pos(self):
+        a = Matrix([[1.0, -2.0], [3.0, -4.0]])
+        b = +a
+        np.testing.assert_array_almost_equal(a.to_numpy(), b.to_numpy())
+
+    def test_neg(self):
+        a = Matrix([[1.0, -2.0], [3.0, -4.0]])
+        b = -a
+        np.testing.assert_array_almost_equal(b.to_numpy(), [[-1, 2], [-3, 4]])
+
+
+# ===========================================================================
+# 7. Comparison operators
+# ===========================================================================
+
+class TestComparisons:
+
+    def test_bool_nonempty_true(self):
+        assert bool(make_2x2()) is True
+
+    def test_bool_zero_rows_false(self):
+        assert bool(Matrix(0, 5)) is False
+
+    def test_bool_zero_cols_false(self):
+        assert bool(Matrix(5, 0)) is False
+
+    def test_bool_zero_by_zero_false(self):
+        assert bool(Matrix(0, 0)) is False
+
+    def test_gt(self):
+        a = Matrix([[1.0, 3.0], [2.0, 4.0]])
+        b = a > 2.0
+        np.testing.assert_array_almost_equal(b.to_numpy(), [[0, 1], [0, 1]])
+
+    def test_gt_int_threshold(self):
+        a = Matrix([[1.0, 3.0], [2.0, 4.0]])
+        b = a > 2
+        np.testing.assert_array_almost_equal(b.to_numpy(), [[0, 1], [0, 1]])
+
+    def test_lt(self):
+        a = Matrix([[1.0, 3.0], [2.0, 4.0]])
+        b = a < 3.0
+        np.testing.assert_array_almost_equal(b.to_numpy(), [[1, 0], [1, 0]])
+
+    def test_lt_int_threshold(self):
+        a = Matrix([[1.0, 3.0], [2.0, 4.0]])
+        b = a < 3
+        np.testing.assert_array_almost_equal(b.to_numpy(), [[1, 0], [1, 0]])
+
+    def test_ge(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        b = a >= 2.0
+        np.testing.assert_array_almost_equal(b.to_numpy(), [[0, 1], [1, 1]])
+
+    def test_ge_int_threshold(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        b = a >= 2
+        np.testing.assert_array_almost_equal(b.to_numpy(), [[0, 1], [1, 1]])
+
+    def test_le(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        b = a <= 2.0
+        np.testing.assert_array_almost_equal(b.to_numpy(), [[1, 1], [0, 0]])
+
+    def test_le_int_threshold(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        b = a <= 2
+        np.testing.assert_array_almost_equal(b.to_numpy(), [[1, 1], [0, 0]])
+
+    def test_eq_equal(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        b = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        assert a == b
+
+    def test_eq_not_equal(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        b = Matrix([[9.0, 2.0], [3.0, 4.0]])
+        assert not (a == b)
+
+    def test_ne_not_equal(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        b = Matrix([[9.0, 2.0], [3.0, 4.0]])
+        assert a != b
+
+    def test_ne_equal(self):
+        a = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        b = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        assert not (a != b)
+
+
+# ===========================================================================
+# 8. Integration / round-trip tests
+# ===========================================================================
+
+class TestIntegration:
+
+    def test_numpy_roundtrip(self):
+        arr = np.random.rand(5, 7)
+        m = Matrix(arr)
+        np.testing.assert_array_almost_equal(m.to_numpy(), arr)
+
+    def test_list_roundtrip(self):
+        data = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]
+        m = Matrix(data)
+        np.testing.assert_array_almost_equal(m.to_numpy(), np.array(data))
+
+    def test_iter_gives_all_rows(self):
+        m = make_2x3()
+        rows = [row.to_numpy() for row in m]
+        expected = m.to_numpy()
+        for i, row in enumerate(rows):
+            np.testing.assert_array_almost_equal(row, expected[i:i+1])
+
+    def test_add_then_transpose(self):
+        a = make_2x3()
+        b = make_2x3()
+        c = (a + b).transpose()
+        assert c.rows == 3
+        assert c.cols == 2
+
+    def test_copy_is_independent(self):
+        orig = make_2x2()
+        clone = orig.copy()
+        clone.set(0, 0, -999.0)
+        assert orig(0, 0) == pytest.approx(1.0)
+
+    def test_matmul_dimensions(self):
+        a = Matrix.random(3, 2)
+        b = Matrix.random(2, 4)
+        c = a * b
+        assert c.shape == (3, 4)
+
+    def test_chained_arithmetic(self):
+        a = Matrix([[2.0, 4.0], [6.0, 8.0]])
+        result = (a * 2.0 - 1.0) + 1.0
+        np.testing.assert_array_almost_equal(result.to_numpy(), [[4, 8], [12, 16]])
+
+    def test_getitem_row_as_int_matches_get_row(self):
+        m = make_2x3()
+        via_bracket = m[0]
+        via_method = m.get_row(0)
+        np.testing.assert_array_almost_equal(via_bracket.to_numpy(), via_method.to_numpy())

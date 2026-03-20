@@ -141,6 +141,8 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def(double() + py::self)      // scalar + Matrix
         .def(py::self += double())     // Matrix += scalar
         .def(py::self + py::self)
+        .def(py::self - double())
+        .def(py::self -= double())
         .def(py::self - py::self)
         .def(py::self * py::self)
         .def("multiply_tiled", &Matrix<double>::multiply_tiled, py::arg("other"))
@@ -268,7 +270,7 @@ PYBIND11_MODULE(daedalus_cpp, m) {
 
     // --- Optimization Bindings ---
     using namespace daedalus::optimization;
-    
+
     py::enum_<SolutionStatus>(m, "SolutionStatus")
         .value("OPTIMAL", SolutionStatus::OPTIMAL)
         .value("INFEASIBLE", SolutionStatus::INFEASIBLE)

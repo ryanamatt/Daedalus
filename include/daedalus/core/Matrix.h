@@ -215,12 +215,6 @@ public:
         return lhs;
     }
 
-    /** @brief Scalar subtraction (scalar - Matrix). */
-    friend Matrix operator-(const T& scalar, Matrix rhs) {
-        rhs -= scalar;
-        return rhs;
-    }
-
     /** @brief In-place matrix subtraction. 
      * @throws std::invalid_argument on dimension mismatch. 
     */
