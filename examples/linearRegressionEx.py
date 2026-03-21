@@ -27,7 +27,7 @@ y_train: Matrix
 y_test: Matrix
 
 X_train, X_test, y_train, y_test = train_test_split(
-    X_scaled, y_mat, test_size=0.2
+    X_scaled, y_mat, test_size=0.2, seed=42
 )
 
 # Train

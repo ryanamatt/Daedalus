@@ -22,4 +22,16 @@ def train_test_split(X: Matrix, y: Matrix, test_size: float = 0.2, seed: int = 4
     Returns:
         A tuple of 4 matrices (train_X, test_X, train_y, test_y)
     """
-    _tts_cpp(X, y, test_size, seed)
+    X_tr_obj, X_te_obj, y_tr_obj, y_te_obj = _tts_cpp(X._obj, y._obj, test_size, seed)
+    
+    X_train = Matrix(X_tr_obj.rows, X_tr_obj.cols)
+    X_test = Matrix(X_te_obj.rows, X_te_obj.cols)
+    y_train = Matrix(y_tr_obj.rows, y_tr_obj.cols)
+    y_test = Matrix(y_te_obj.rows, y_te_obj.cols)
+    
+    X_train._obj = X_tr_obj
+    X_test._obj = X_te_obj
+    y_train._obj = y_tr_obj
+    y_test._obj = y_te_obj
+    
+    return (X_train, X_test, y_train, y_test)

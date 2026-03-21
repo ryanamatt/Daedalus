@@ -32,9 +32,9 @@ class LinearRegression(Model):
                     uses the C++ default convergence logic.
         """
         if epochs is not None:
-            self._obj.fit(X, y, epochs)
+            self._obj.fit(X._obj, y._obj, epochs)
         else:
-            self._obj.fit(X, y)
+            self._obj.fit(X._obj, y._obj)
 
     def predict(self, X: Matrix) -> Matrix:
         """
@@ -46,7 +46,10 @@ class LinearRegression(Model):
         Returns:
             A Matrix containing the predicted values.
         """
-        return self._obj.predict(X)
+        res_obj = self._obj.predict(X._obj)
+        res = Matrix(res_obj.rows, res_obj.cols)
+        res._obj = res_obj
+        return res
     
     def save_model(self, filename: str) -> None:
         """

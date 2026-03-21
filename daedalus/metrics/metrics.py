@@ -24,7 +24,7 @@ def mean_squared_error(y_true: Matrix, y_pred: Matrix) -> float:
     Returns:
         The calculated mean squared error as a float.
     """
-    return _mse_cpp(y_true, y_pred)
+    return _mse_cpp(y_true._obj, y_pred._obj)
 
 def r2_score(y_true: Matrix, y_pred: Matrix) -> float:
     """
@@ -37,7 +37,7 @@ def r2_score(y_true: Matrix, y_pred: Matrix) -> float:
     Returns:
         The R-Squared score (typically between 0.0 and 1.0).
     """
-    return _r2_cpp(y_true, y_pred)
+    return _r2_cpp(y_true._obj, y_pred._obj)
 
 def confusion_matrix(y_true: Matrix, y_pred: Matrix) -> Matrix:
     """
@@ -51,7 +51,10 @@ def confusion_matrix(y_true: Matrix, y_pred: Matrix) -> Matrix:
         A 2x2 Matrix: [[True Positives, False Positives], 
                       [False Negatives, True Negatives]]
     """
-    return _cm_cpp(y_true, y_pred)
+    res_obj = _cm_cpp(y_true._obj, y_pred._obj)
+    res = Matrix(res_obj.rows, res_obj.cols)
+    res._obj = res_obj
+    return res
 
 def accuracy_score(y_true: Matrix, y_pred: Matrix) -> float:
     """
@@ -64,7 +67,7 @@ def accuracy_score(y_true: Matrix, y_pred: Matrix) -> float:
     Returns:
         Accuracy ranging from 0.0 to 1.0.
     """
-    return _acc_cpp(y_true, y_pred)
+    return _acc_cpp(y_true._obj, y_pred._obj)
 
 def precision_score(y_true: Matrix, y_pred: Matrix) -> float:
     """
@@ -77,7 +80,7 @@ def precision_score(y_true: Matrix, y_pred: Matrix) -> float:
     Returns:
         Precision score (TP / (TP + FP)).
     """
-    return _prec_cpp(y_true, y_pred)
+    return _prec_cpp(y_true._obj, y_pred._obj)
 
 def recall_score(y_true: Matrix, y_pred: Matrix) -> float:
     """
@@ -90,7 +93,7 @@ def recall_score(y_true: Matrix, y_pred: Matrix) -> float:
     Returns:
         Recall score (TP / (TP + FN)).
     """
-    return _rec_cpp(y_true, y_pred)
+    return _rec_cpp(y_true._obj, y_pred._obj)
 
 def f1_score(y_true: Matrix, y_pred: Matrix) -> float:
     """
@@ -103,7 +106,7 @@ def f1_score(y_true: Matrix, y_pred: Matrix) -> float:
     Returns:
         F1 score ranging from 0.0 to 1.0.
     """
-    return _f1_cpp(y_true, y_pred)
+    return _f1_cpp(y_true._obj, y_pred._obj)
 
 def mcc_score(y_true: Matrix, y_pred: Matrix) -> float:
     """
@@ -116,5 +119,5 @@ def mcc_score(y_true: Matrix, y_pred: Matrix) -> float:
     Returns:
         MCC score between -1.0 and 1.0.
     """
-    return _mcc_cpp(y_true, y_pred)
+    return _mcc_cpp(y_true._obj, y_pred._obj)
 

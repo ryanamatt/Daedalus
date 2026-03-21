@@ -27,7 +27,7 @@ class KNN(Model):
             X: Training feature matrix.
             y: Training target matrix.
         """
-        self._obj.fit(X, y)
+        self._obj.fit(X._obj, y._obj)
 
     def predict(self, X: Matrix) -> Matrix:
         """
@@ -39,4 +39,7 @@ class KNN(Model):
         Returns:
             A Matrix containing the predicted values.
         """
-        return self._obj.predict(X)
+        res_obj = self._obj.predict(X._obj)
+        res = Matrix(res_obj.rows, res_obj.cols)
+        res._obj = res_obj
+        return res

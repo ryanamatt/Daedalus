@@ -1,7 +1,7 @@
 from __future__ import annotations
 import os
 from ..daedalus_cpp import read_csv as read_csv_cpp
-from ..daedalus_cpp import DataFrame
+from .._core import DataFrame
 
 def read_csv(filename: str, has_header: bool = True) -> DataFrame:
     """
@@ -23,7 +23,9 @@ def read_csv(filename: str, has_header: bool = True) -> DataFrame:
         raise FileNotFoundError(f"The file '{filename}' could not be found.")
     
     try:
-        return read_csv_cpp(filename, has_header)
+        df = DataFrame()
+        df._obj = read_csv_cpp(filename, has_header)
+        return df
     except Exception as e:
         raise RuntimeError(f"Failed to parse CSV via Daedalus engine: {e}")
     

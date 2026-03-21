@@ -31,9 +31,9 @@ class LogisticRegression(Model):
             epochs: Optional number of iterations. If None, uses default logic.
         """
         if epochs is not None:
-            self._obj.fit(X, y, epochs)
+            self._obj.fit(X._obj, y._obj, epochs)
         else:
-            self._obj.fit(X, y)
+            self._obj.fit(X._obj, y._obj)
 
     def predict(self, X: Matrix) -> Matrix:
         """
@@ -45,8 +45,10 @@ class LogisticRegression(Model):
         Returns:
             A Matrix of binary class predictions.
         """
-        return self._obj.predict(X)
-
+        res_obj = self._obj.predict(X._obj)
+        res = Matrix(res_obj.rows, res_obj.cols)
+        res._obj = res_obj
+        return res
     def predict_proba(self, X: Matrix) -> Matrix:
         """
         Returns the raw probability of the positive class (range [0, 1]).
@@ -57,7 +59,10 @@ class LogisticRegression(Model):
         Returns:
             A Matrix of probabilities.
         """
-        return self._obj.predict_proba(X)
+        res_obj = self._obj.predict_proba(X._obj)
+        res = Matrix(res_obj.rows, res_obj.cols)
+        res._obj = res_obj
+        return res
 
     def save_model(self, filename: str) -> None:
         """

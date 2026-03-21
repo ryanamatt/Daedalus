@@ -33,7 +33,7 @@ class StandardScaler:
         Returns:
             self: The fitted scaler instance.
         """
-        self._obj.fit(X)
+        self._obj.fit(X._obj)
         return self
 
     def transform(self, X: Matrix) -> Matrix:
@@ -47,7 +47,9 @@ class StandardScaler:
         Returns:
             Matrix: A new Matrix containing the standardized features.
         """
-        return self._obj.transform(X)
+        result = Matrix(0, 0)
+        result._obj = self._obj.transform(X._obj)
+        return result
 
     def fit_transform(self, X: Matrix) -> Matrix:
         """
@@ -60,4 +62,5 @@ class StandardScaler:
         Returns:
             Matrix: A new Matrix containing the standardized features.
         """
-        return self._obj.fit_transform(X)
+        self.fit(X)
+        return self.transform(X)
