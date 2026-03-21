@@ -223,12 +223,6 @@ class Matrix:
             res._obj = self._obj - other._obj
         return res
     
-    def __rsub__(self, scalar: float) -> Matrix:
-        """Scalar subtraction from the left (e.g., 10.0 - matrix)."""
-        res = Matrix(0, 0)
-        res._obj = float(scalar) - self._obj
-        return res
-    
     def __isub__(self, other: float | Matrix) -> Matrix:
         """In-place element-wise subtraction."""
         if isinstance(other, (int, float)):

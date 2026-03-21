@@ -517,6 +517,11 @@ class TestComparisons:
         b = Matrix([[1.0, 2.0], [3.0, 4.0]])
         assert not (a != b)
 
+    def test_comparisons_with_wrong_types(self):
+        """Exercises the isinstance checks in __eq__ and __ne__."""
+        m = Matrix(2, 2)
+        assert (m == "not a matrix") is False
+        assert (m != "not a matrix") is True
 
 # ===========================================================================
 # 8. Integration / round-trip tests
