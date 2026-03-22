@@ -1,3 +1,20 @@
+"""
+test_io.py
+=================
+Full-coverage test suite for the IO Python wrapper class (daedalus/_core/IO.py).
+
+Run:
+    pytest tests/03_test_io.py
+
+    or run all tests by
+
+    pytest
+"""
+
+
+from __future__ import annotations
+from unittest.mock import patch
+import pytest
 from daedalus import read_csv, DataFrame
 
 def test_read_csv():
@@ -13,3 +30,14 @@ def test_read_csv():
         for j in range(df.cols):
             assert df.at(i, j) == count
             count += 1
+
+def test_file_not_found():
+    with pytest.raises(FileNotFoundError):
+        df: DataFrame = read_csv('fakeName.csv')
+
+def test_csv_runtime_error():
+    with patch('daedalus._core.io.read_csv_cpp') as mock_cpp_read:
+        mock_cpp_read.side_effect = Exception("C++ Internal Error")
+
+        with pytest.raises(RuntimeError, match="Failed to parse CSV via Daedalus engine"):
+            read_csv('tests/test.csv')
