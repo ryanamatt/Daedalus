@@ -26,6 +26,12 @@ private:
     bool is_fitted = false;
 
 public:
+    std::vector<double> get_means() { return means; }
+
+    std::vector<double> get_std_devs() { return std_devs; }
+
+    bool get_is_fitted() { return is_fitted; }
+
     /**
      * @brief Computes the mean and standard deviation for each column in the matrix.
      * * @param X The input Matrix used to compute scaling parameters.

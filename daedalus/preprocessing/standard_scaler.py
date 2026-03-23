@@ -15,6 +15,23 @@ class StandardScaler:
     deviation of the training samples.
     """
 
+    @property
+    def means(self) -> list[float]:
+        """The means of a fitted StandardScaler"""
+        values = self._obj.get_means()
+        return values if values else []
+
+    @property
+    def std_devs(self) -> list[float]:
+        """The standard deviations of a fitted StandardScaler"""
+        values = self._obj.get_std_devs()
+        return values if values else []
+    
+    @property
+    def is_fitted(self) -> bool:
+        """A boolean flag for determined if fit has been called on a StandardScaler"""
+        return self._obj.get_is_fitted()
+
     def __init__(self) -> None:
         """
         Initializes the StandardScaler.

@@ -190,6 +190,9 @@ PYBIND11_MODULE(daedalus_cpp, m) {
     // --- Preprocessing Bindings ---
     py::class_<StandardScaler>(m, "StandardScaler")
         .def(py::init<>())
+        .def("get_means", &StandardScaler::get_means)
+        .def("get_std_devs", &StandardScaler::get_std_devs)
+        .def("get_is_fitted", &StandardScaler::get_is_fitted)
         .def("fit", &StandardScaler::fit, py::arg("X"))
         .def("transform", &StandardScaler::transform, py::arg("X"))
         .def("fit_transform", [](StandardScaler &self, const Matrix<double> &X) {
