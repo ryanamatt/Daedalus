@@ -126,6 +126,19 @@ class TestInit:
         with pytest.raises(TypeError, match="Matrix constructor expects"):
             Matrix("a", "b")
 
+# ===========================================================================
+# 2. Static Methods
+# ===========================================================================
+
+class TestStaticMethods:
+    def test_identity(self):
+        m = Matrix.Identity(3, 3)
+
+        assert m.rows == 3
+        assert m.cols == 3
+    
+        m_np = m.to_numpy()
+        assert np.testing.assert_almost_equal(m_np, np.array([[1, 0, 0], [0, 1, 1], [0, 0, 1]]))
 
 # ===========================================================================
 # 2. Properties

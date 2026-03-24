@@ -62,6 +62,30 @@ class Matrix:
             raise TypeError(
                 "Matrix constructor expects (rows, cols), list[list], or np.ndarray"
             )
+        
+    # --------------------------------
+    # Static Methods
+    # --------------------------------
+
+    @staticmethod
+    def Identity(rows: int, cols: int) -> Matrix:
+        """
+        Creates an Identity Matrix with the given rows and cols.
+        
+        Args:
+            rows (int): Number of rows
+            cols (int): Number of cols
+
+        Returns:
+            An Identity Matrix with given dimensions.
+        """
+        m = Matrix(rows, cols)
+        for i in range(rows):
+            for j in range(cols):
+                if i == j:
+                    m[i, j] = 1
+
+        return m
 
     # --------------------------------
     # Propertys
