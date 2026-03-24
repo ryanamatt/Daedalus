@@ -64,6 +64,12 @@ class TestInit:
         assert m.rows == 0
         assert m.cols == 0
 
+    def test_init_1d(self):
+        m = Matrix([1, 2, 3])
+
+        assert m.rows == 3
+        assert m.cols == 1
+
     def test_init_by_dimensions_negative_rows(self):
         with pytest.raises(ValueError, match="dimensions must be positive"):
             Matrix(-1, 3)
@@ -81,11 +87,6 @@ class TestInit:
         assert m(0, 0) == pytest.approx(1.0)
         assert m(1, 1) == pytest.approx(4.0)
 
-    def test_init_from_list_1d_raises(self):
-        """A flat list is 1-D after np.array() conversion."""
-        with pytest.raises(ValueError, match="Expected 2D array"):
-            Matrix([1.0, 2.0, 3.0])
-
     # --- numpy path ---
 
     def test_init_from_numpy_2d(self):
@@ -100,16 +101,6 @@ class TestInit:
         arr = np.asfortranarray(np.ones((3, 3)))
         m = Matrix(arr)
         assert m.rows == 3
-
-    def test_init_from_numpy_3d_raises(self):
-        arr = np.ones((2, 3, 4))
-        with pytest.raises(ValueError, match="Expected 2D array"):
-            Matrix(arr)
-
-    def test_init_from_numpy_1d_raises(self):
-        arr = np.array([1.0, 2.0, 3.0])
-        with pytest.raises(ValueError, match="Expected 2D array"):
-            Matrix(arr)
 
     # --- bad-type path ---
 

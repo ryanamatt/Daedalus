@@ -46,7 +46,8 @@ class Matrix:
             
             if isinstance(data, np.ndarray):
                 if data.ndim != 2:
-                    raise ValueError(f"Expected 2D array, but got {data.ndim}D.")
+                    # raise ValueError(f"Expected 2D array, but got {data.ndim}D.")
+                    data = data.reshape(len(data), 1)
                 
                 data = np.ascontiguousarray(data, dtype=np.float64)
                 
