@@ -41,7 +41,7 @@ target_include_directories(daedalus_cpp PRIVATE include)
 
 # --- Compiler Specifics ---
 # Only apply static linking for MinGW/GCC; MSVC doesn't recognize these flags
-if(MINGW OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
+if(MINGW)
     target_link_options(daedalus_cpp PRIVATE "-static-libgcc" "-static-libstdc++")
 endif()
 
