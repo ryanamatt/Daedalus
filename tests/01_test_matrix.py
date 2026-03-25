@@ -132,7 +132,7 @@ class TestInit:
 
 class TestStaticMethods:
     def test_identity(self):
-        m = Matrix.Identity(3, 3)
+        m = Matrix.Identity(3)
 
         assert m.rows == 3
         assert m.cols == 3
