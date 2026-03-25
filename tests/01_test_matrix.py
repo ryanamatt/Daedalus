@@ -14,9 +14,6 @@ Run:
 from __future__ import annotations
 import pytest
 import numpy as np
-import sys
-import builtins
-import importlib
 from unittest.mock import patch
 from daedalus import Matrix
 import daedalus._core.matrix as matrix_module
@@ -296,6 +293,26 @@ class TestInstanceMethods:
         b = Matrix([[1, 2], [1, 2], [1, 2]])
         assert b.trace() == 3.0
 
+    def test_det(self):
+        a = Matrix([[1, 2], [3, 4]])
+        assert a.det() == -2.0
+        b = Matrix([[1, 2, 3], [4, 5, 6], [7, 7, 9]])
+        assert b.det() == -6.0
+        c = Matrix([[1, 2], [3, 4], [5, 6]])
+        with pytest.raises(ValueError):
+            c.det()
+
+    def test_inverse(self):
+        a = Matrix([[1, 2], [3, 4]])
+        assert a.rows == 2 and a.cols == 2
+        a = a.inverse()
+        assert round(a[0, 0]) == -2 and round(a[0, 1]) == 1
+        assert round(a[1, 0], 2) == 1.5 and round(a[1, 1], 2) == -0.5
+
+        c = Matrix([[1, 2], [3, 4], [5, 6]])
+        with pytest.raises(ValueError):
+            c.inverse()
+ 
     def test_get_row(self):
         m = make_2x3()
         row = m.get_row(1)

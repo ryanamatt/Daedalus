@@ -255,6 +255,20 @@ class Matrix:
         """Returns a new Matrix that is the Trace of the current Matrix."""
         return self._obj.trace()
 
+    def det(self) -> float:
+        """Returns the Determinant of a Matrix."""
+        if self.rows != self.cols:
+            raise ValueError("Must be a Square Matrix to take Determininat (rows == cols).")
+        return self._obj.det()
+
+    def inverse(self) -> Matrix:
+        """Returns the inverse of the matrix."""
+        if self.rows != self.cols:
+            raise ValueError("Must be a Square Matrix to take inverse (rows == cols).")
+        res = Matrix(0, 0)
+        res._obj = self._obj.inverse()
+        return res
+
     def get_row(self, idx: int) -> Matrix:
         """Returns a specific row as a new Matrix."""
         res = Matrix(0, 0)

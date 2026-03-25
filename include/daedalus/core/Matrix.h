@@ -525,6 +525,86 @@ public:
         return result;
     }
 
+    /**
+     * @brief Computes the determinant of the matrix using LU Decomposition. Assumes Matrix is Square.
+     * @return double The determinant value.
+     */
+    double det() const {
+        if (num_rows == 0) return 1.0;
+        if (num_rows == 1) return static_cast<double>(data[0]);
+
+        Matrix<T> temp = this->copy();
+        double determinant = 1.0;
+        size_t n = num_rows;
+
+        for (size_t i = 0; i < n; ++ i) {
+            size_t pivot = i;
+            for (size_t j = i + 1; j < n; ++j) {
+                if (std::abs(temp(i, j)) > std::abs(temp(pivot, i))) {
+                    pivot = j;
+                }
+            }
+
+            if (std::abs(temp(pivot, i)) < 1e-12) { return 0.0; } // Singular Matrix
+
+            if (pivot != i) {
+                temp.swap_rows(i, pivot);
+                determinant *= -1.0;
+            }
+
+            determinant *= temp(i, i);
+
+            for (size_t j = i + 1; j < n; ++j) {
+                T factor = temp(j, i) / temp(i, i);
+                for (size_t k = i + 1; k < n; ++k) {
+                    temp(j, k) -= factor * temp(i, k);
+                }
+            }
+        }
+        return determinant;
+    }
+
+    /**
+     * @brief Computes the inverse of the matrix using Gauss-Jordan elimination.
+     * @return Matrix<T> The inverse matrix.
+     */
+    Matrix<T> inverse() const {
+        double determinant = this->det();
+        if (std::abs(determinant) < 1e-12) {
+            throw std::logic_error("Matrix is singular and cannot be inverted.");
+        }
+
+        size_t n = num_rows;
+        Matrix<T> aug = this->copy();
+        Matrix<T> inv = Matrix<T>::create_diagonal_scaler(n, n, 1.0); // Start with Identity
+
+        for (size_t i = 0; i < n; ++i) {
+            // Pivot selection
+            size_t pivot = i;
+            for (size_t j = i + 1; j < n; ++j) {
+                if (std::abs(aug(j, i)) > std::abs(aug(pivot, i))) pivot = j;
+            }
+
+            aug.swap_rows(i, pivot);
+            inv.swap_rows(i, pivot);
+
+            // Scale pivot row to 1
+            T div = aug(i, i);
+            aug.scale_row(i, 1.0 / div);
+            inv.scale_row(i, 1.0 / div);
+
+            // Eliminate other entries in column
+            for (size_t j = 0; j < n; ++j) {
+                if (i != j) {
+                    T factor = aug(j, i);
+                    aug.add_scaled_row(i, j, -factor);
+                    inv.add_scaled_row(i, j, -factor);
+                }
+            }
+        }
+        return inv;
+    }
+
     double trace() const {
         size_t diag_len = std::min({num_rows, num_cols});
         double trace_val = 0.0;

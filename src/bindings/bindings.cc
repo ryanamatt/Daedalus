@@ -166,6 +166,8 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def("round", &Matrix<double>::round, py::arg("places"))
         .def("abs", &Matrix<double>::abs)
         .def("transpose", &Matrix<double>::transpose)
+        .def("det", &Matrix<double>::det)
+        .def("inverse", &Matrix<double>::inverse)
         .def("trace", &Matrix<double>::trace);
 
     // --- DataFrame Bindings ---
