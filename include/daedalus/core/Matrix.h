@@ -103,18 +103,59 @@ public:
     const T* data_ptr() const { return data.data(); }
 
     /**
-     * @brief Creates an identity Matrix
-     * @param r Number of rows.
-     * @param c Number of Cols.
+     * @brief Creates a Matrix and fills it with desired value for all elements.
+     * @param rows The rows of the Matrix
+     * @param cols The cols of the Matrix
+     * @param fill_value The value to fill the matrix with.
+     * @return static Matrix<T> filled with desired value.
      */
-    Matrix<double> create_identity(size_t r, size_t c) {
-        Matrix mat(r, c);
-        for (size_t i = 0; i < mat.rows(); ++i) {
-            mat(i, i) = 1.0;
+    static Matrix<T> create_filled_matrix(size_t rows, size_t cols, double fill_value) {
+        Matrix<T> mat(rows, cols);
+        T* ptr = mat.data_ptr();
+
+        for (size_t i = 0; i < rows * cols; ++i) {
+            ptr[i] = static_cast<T>(fill_value);
         }
         return mat;
     }
 
+    /**
+     * @brief Creates a rectangular diagonal Matrix.
+     * @param r Number of rows.
+     * @param c Number of columns.
+     * @param values Vector of values to place on the diagonal.
+     * @return Matrix<T> A rectangular matrix where mat(i, i) = values[i].
+     */
+    static Matrix<T> create_diagonal_vector(size_t rows, size_t cols, const std::vector<T>& values) {
+        Matrix<T> mat(rows, cols);
+            T* ptr = mat.data_ptr();
+            
+            size_t diag_len = std::min({rows, cols, values.size()});
+            
+            for (size_t i = 0; i < diag_len; ++i) {
+                ptr[i * cols + i] = values[i];
+            }
+            return mat;
+        }
+
+    /**
+     * @brief Creates a square diagonal Matrix filled with a single scalar value.
+     * @param rows The rows of the matrix.
+     * @param cols The cols of the matrix.
+     * @param value The value to place on the diagonal.
+     */
+    static Matrix<T> create_diagonal_scaler(size_t rows, size_t cols, double value) {
+        Matrix<T> mat(rows, cols);
+        T* ptr = mat.data_ptr();
+
+        size_t diag_len = std::min({rows, cols});
+        
+        for (size_t i = 0; i < diag_len; ++i) {
+            ptr[i * cols + i] = value;
+        }
+        return mat;
+    }
+    
     /**
      * @brief Extracts a single row from the matrix.
      * @param row_idx The index of the row to extract (0-indexed).
