@@ -68,23 +68,18 @@ class Matrix:
     # --------------------------------
 
     @staticmethod
-    def Identity(rows: int, cols: int) -> Matrix:
+    def Identity(self, size: int) -> Matrix:
         """
         Creates an Identity Matrix with the given rows and cols.
         
         Args:
-            rows (int): Number of rows
-            cols (int): Number of cols
+            size (int): Number of rows & cols.
 
         Returns:
             An Identity Matrix with given dimensions.
         """
-        m = Matrix(rows, cols)
-        for i in range(rows):
-            for j in range(cols):
-                if i == j:
-                    m[i, j] = 1
-
+        m = Matrix(size, size)
+        m._obj = self._obj.create_identity(size, size)
         return m
 
     # --------------------------------

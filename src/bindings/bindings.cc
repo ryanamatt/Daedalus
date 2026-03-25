@@ -56,6 +56,7 @@ PYBIND11_MODULE(daedalus_cpp, m) {
     // --- Matrix Bindings ---
     py::class_<Matrix<double>>(m, "Matrix", py::buffer_protocol())
         .def(py::init<size_t, size_t>())
+        .def("create_identity", &Matrix<double>::create_identity, py::arg("r"), py::arg("c"))
         .def("__getitem__", [](const Matrix<double> &self, py::object index_obj) -> py::object {
             // Check if the input is actually a tuple
             if (!py::isinstance<py::tuple>(index_obj)) {
