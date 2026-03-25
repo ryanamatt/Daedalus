@@ -34,3 +34,6 @@ addopts = "-m 'not benchmark_test'"
 markers = [
     "benchmark_test: marks tests as benchmarks (deselect with '-m \"not benchmark_test\"')"
 ]
+
+[tool.coverage.run]
+omit = ["daedalus/daedalus_cpp.py"]

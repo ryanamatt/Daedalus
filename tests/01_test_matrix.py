@@ -14,7 +14,12 @@ Run:
 from __future__ import annotations
 import pytest
 import numpy as np
+import sys
+import builtins
+import importlib
+from unittest.mock import patch
 from daedalus import Matrix
+import daedalus._core.matrix as matrix_module
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -69,6 +74,11 @@ class TestInit:
 
         assert m.rows == 3
         assert m.cols == 1
+
+    def test_init_empty_list(self):
+        m = Matrix([])
+        assert m.rows == 0
+        assert m.cols == 0
 
     def test_init_by_dimensions_negative_rows(self):
         with pytest.raises(ValueError, match="dimensions must be positive"):
@@ -190,6 +200,13 @@ class TestStaticMethods:
             for j in range(m.cols):
                 assert m(i, j) == 1 if i == j else m(i, j) == 0
 
+    def test_ones(self):
+        m = Matrix.Ones(2, 2)
+        assert m.rows == 2
+        assert m.cols == 2
+        assert m(0, 0) == 1.0
+        assert m(1, 1) == 1.0
+
     def test_fill(self):
         m = Matrix.Fill(3, 3, 4)
         assert m.rows == 3
@@ -239,6 +256,9 @@ class TestStaticMethods:
         with pytest.raises(TypeError):
             m = Matrix.Diagonal(1, 2)
 
+        with pytest.raises(TypeError, match="Invalid Arguments"):
+            Matrix.Diagonal(2, 2, "not-a-list-or-number")
+
 
 # ===========================================================================
 # 4. Instance Methods
@@ -252,6 +272,13 @@ class TestInstanceMethods:
         arr = m.to_numpy()
         assert isinstance(arr, np.ndarray)
         np.testing.assert_array_almost_equal(arr, np.array(data))
+
+    def test_to_numpy_import_error(self):
+        m = Matrix(2, 2)
+        # Patch the constant in the specific module where it's used
+        with patch.object(matrix_module, 'HAS_NUMPY', False):
+            with pytest.raises(ImportError, match="NumPy is required"):
+                m.to_numpy()
 
     def test_transpose(self):
         m = make_2x3()
