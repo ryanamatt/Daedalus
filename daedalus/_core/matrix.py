@@ -284,6 +284,27 @@ class Matrix:
         res = Matrix(0, 0)
         res._obj = self._obj.copy()
         return res
+
+    # -------------------------------- 
+    # Decomposition Methods 
+    # --------------------------------
+
+    def svd(self) -> tuple[Matrix, list[float], Matrix]:
+        """
+        Computes the Singular Value Decomposition.
+
+        Returns (U, singular_values, V) such that A = U * diag(S) * V^T
+        """
+        u_raw, s_list, v_raw = self._obj.svd()
+        
+        # Wrap the C++ objects back into the Python Matrix class
+        U = Matrix(0, 0)
+        U._obj = u_raw
+        
+        V = Matrix(0, 0)
+        V._obj = v_raw
+        
+        return U, s_list, V
     
     # -------------------------------- 
     # Dunder Methods 

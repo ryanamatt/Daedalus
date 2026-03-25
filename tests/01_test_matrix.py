@@ -410,7 +410,29 @@ class TestDunderAccess:
         assert a[1, 0] == 2.14056
 
 # ===========================================================================
-# 6. Arithmetic operators
+# 6. Test Decomposition Methods
+# ===========================================================================
+
+class TestDecomposition:
+
+    def test_svd(self):
+        A = Matrix([[3, 2, 2], [2, 3, -2]])
+        U, sigma, V = A.svd()
+        U_rd = round(U, 3)
+        assert U_rd[0, 0] == 0.707 and U_rd[0, 1] == 0.707 and U_rd[0, 2] == 0
+        assert U_rd[1, 0] == 0.707 and U_rd[1, 1] == -0.707 and U_rd[1, 2] == 0
+
+        sigma = [round(s, 1) for s in sigma]
+        assert sigma == [5.0, 3.0, 0.0]
+
+        V_rd = round(V, 3)
+        assert V_rd[0, 0] == 0.707 and V_rd[0, 1] == 0.707 and V_rd[0, 2] == 0
+        assert V_rd[1, 0] == 0.236 and V_rd[1, 1] == -0.236 and V_rd[1, 2] == 0.943
+        assert V_rd[2, 0] == 0.667 and V_rd[2, 1] == -0.667 and V_rd[2, 2] == -0.333
+
+
+# ===========================================================================
+# 7. Arithmetic operators
 # ===========================================================================
 
 class TestArithmetic:
@@ -579,7 +601,7 @@ class TestArithmetic:
 
 
 # ===========================================================================
-# 7. Comparison operators
+# 8. Comparison operators
 # ===========================================================================
 
 class TestComparisons:
@@ -663,7 +685,7 @@ class TestComparisons:
         assert (m != "not a matrix") is True
 
 # ===========================================================================
-# 8. Integration / round-trip tests
+# 9. Integration / round-trip tests
 # ===========================================================================
 
 class TestIntegration:
