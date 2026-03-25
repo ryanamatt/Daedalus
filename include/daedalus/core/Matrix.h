@@ -27,7 +27,7 @@ class Matrix {
     std::vector<T> data;
 
 public:
-/**
+    /**
      * @brief Constructs a new Matrix with specified dimensions.
      * @param r Number of rows.
      * @param c Number of columns.
@@ -101,6 +101,19 @@ public:
     /** @return Pointer to the underlying raw data. */
     T* data_ptr() { return data.data(); }
     const T* data_ptr() const { return data.data(); }
+
+    /**
+     * @brief Creates an identity Matrix
+     * @param r Number of rows.
+     * @param c Number of Cols.
+     */
+    Matrix<double> create_identity(size_t r, size_t c) {
+        Matrix mat(r, c);
+        for (size_t i = 0; i < mat.rows(); ++i) {
+            mat(i, i) = 1;
+        }
+        return mat;
+    }
 
     /**
      * @brief Extracts a single row from the matrix.
