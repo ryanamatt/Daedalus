@@ -9,8 +9,6 @@
 - [ ] 🐛 Bug Fix (fixing memory leaks, segfaults, or math errors)
 - [ ] 📚 Documentation/Chore update
 
-## **C++ / Learning Notes**
-
 ### **How Has This Been Tested?**
 
 - [ ] Added/Updated Python tests in `tests/`
