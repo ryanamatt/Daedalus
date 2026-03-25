@@ -35,6 +35,43 @@ public:
      */
     Matrix(size_t r, size_t c) : num_rows(r), num_cols(c), data(r * c) {}
 
+    /**
+     * @brief Constructs a Matrix from a nested vector (list of lists).
+     * @param nested_data The input data.
+     * @throws std::invalid_argument if the input is empty or rows have inconsistent lengths.
+     */
+    Matrix(const std::vector<std::vector<T>>& nested_data) {
+        num_rows = nested_data.size();
+        if (num_rows == 0) {
+            num_cols = 0;
+            return;
+        }
+        
+        num_cols = nested_data[0].size();
+        data.reserve(num_rows * num_cols);
+
+        for (const auto& row : nested_data) {
+            if (row.size() != num_cols) {
+                throw std::invalid_argument("All rows must have the same number of columns.");
+            }
+            data.insert(data.end(), row.begin(), row.end());
+        }
+    }
+
+    /**
+     * @brief Constructs a Matrix from a flat vector and dimensions.
+     * @param r Number of rows.
+     * @param c Number of columns.
+     * @param flat_data 1D vector of elements.
+     * @throws std::invalid_argument if size doesn't match r * c.
+     */
+    Matrix(size_t r, size_t c, const std::vector<T>& flat_data) 
+        : num_rows(r), num_cols(c), data(flat_data) {
+        if (flat_data.size() != r * c) {
+            throw std::invalid_argument("Data size does not match matrix dimensions.");
+        }
+    }
+
     /** @brief Accesses an element at (r, c) for modification. */
     T& operator()(size_t r, size_t c) { 
         if (r >= num_rows || c >= num_cols) {
