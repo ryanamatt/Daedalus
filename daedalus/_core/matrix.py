@@ -251,6 +251,10 @@ class Matrix:
         res._obj = self._obj.transpose()
         return res
 
+    def trace(self) -> float:
+        """Returns a new Matrix that is the Trace of the current Matrix."""
+        return self._obj.trace()
+
     def get_row(self, idx: int) -> Matrix:
         """Returns a specific row as a new Matrix."""
         res = Matrix(0, 0)
@@ -317,6 +321,11 @@ class Matrix:
         for i in range(self.rows):
             yield self.get_row(i)
 
+    def __round__(self, places: int) -> Matrix:
+        result = Matrix(self.rows, self.cols)
+        result._obj = self._obj.round(places)
+        return result
+
     # --- Basic Dunder Mathematical Operations ---
 
     def __add__(self, other: Matrix) -> Matrix:
@@ -376,6 +385,17 @@ class Matrix:
     
     def __imul__(self, other: float) -> Matrix:
         self._obj *= float(other)
+        return self
+
+    def __matmul__(self, other: Matrix | float) -> Matrix:
+        return self.__mul__(other)
+
+    def __pow__(self, power_value: int | float):
+        self._obj = self._obj.power_to(power_value)
+        return self
+
+    def __abs__(self):
+        self._obj = self._obj.abs()
         return self
     
     def __pos__(self) -> Matrix:

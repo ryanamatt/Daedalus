@@ -156,13 +156,17 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def("multiply_tiled", &Matrix<double>::multiply_tiled, py::arg("other"))
         .def(py::self * double())
         .def(double() * py::self)
+        .def("power_to", &Matrix<double>::power_to, py::arg("power_value"))
         .def(py::self > double())
         .def(py::self < double())
         .def(py::self >= double())
         .def(py::self <= double())
         .def(py::self == py::self)
         .def(py::self != py::self)
-        .def("transpose", &Matrix<double>::transpose);
+        .def("round", &Matrix<double>::round, py::arg("places"))
+        .def("abs", &Matrix<double>::abs)
+        .def("transpose", &Matrix<double>::transpose)
+        .def("trace", &Matrix<double>::trace);
 
     // --- DataFrame Bindings ---
     py::class_<DataFrame>(m, "DataFrame")

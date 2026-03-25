@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <functional>
+#include <cmath>
 
 template <typename T>
 
@@ -403,6 +404,20 @@ public:
         return result;
     }
 
+    /**
+     * @brief Takes each element in the Matrix and raises it to the power of the power_value
+     * @param power_value The value of the power to raise each element to
+     * @return Matrix Result of same Matrix but taken to desired power.
+     */
+    Matrix<T> power_to(const T& power_value) {
+        Matrix<T> result(num_rows, num_cols);
+        for (size_t i = 0; i < data.size(); ++i) {
+            double current_val = static_cast<double>(data.at(i));
+            result.data[i] = static_cast<T>(std::pow(current_val, static_cast<double>(power_value)));
+        }
+        return result;
+    }
+
     Matrix<T> operator>(const T& threshold) const {
         Matrix<T> res(num_rows, num_cols);
         const T* src = this->data_ptr();
@@ -466,6 +481,27 @@ public:
         return !(*this == other);
     }
 
+    Matrix round(int places) {
+        Matrix result(num_rows, num_cols);
+        std::transform(data.begin(), data.end(), result.data.begin(),
+                [places](T i){ 
+                    double multiplier = std::pow(10.0, places);
+                    return std::round(i * multiplier) / multiplier;
+                 });
+        return result;
+    }
+
+    /**
+     * @brief Takes the absolute value of all elements in the Matrix
+     * @return A Matrix that is the abs value of all elements.
+     */
+    Matrix abs() {
+        Matrix<double> result(num_rows, num_cols);
+
+        std::transform(data.begin(), data.end(), 
+            result.data.begin(), [](T i) { return std::abs(i); });
+        return result;
+    }
 
     /**
      * @brief Computes the transpose of the matrix.
@@ -487,6 +523,15 @@ public:
             }
         }
         return result;
+    }
+
+    double trace() const {
+        size_t diag_len = std::min({num_rows, num_cols});
+        double trace_val = 0.0;
+        for (size_t i = 0; i < diag_len; ++i) {
+            trace_val += data[i * (diag_len + 1)];
+        }
+        return trace_val;
     }
 
 };
