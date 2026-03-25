@@ -1,7 +1,12 @@
 from __future__ import annotations
 import typing
-import numpy as np
 from ..daedalus_cpp import Matrix as _MatrixCpp
+
+try:
+    import numpy as np
+    HAS_NUMPY = True
+except ImportError:
+    HAS_NUMPY = False
 
 class Matrix:
     """
@@ -41,33 +46,33 @@ class Matrix:
                 raise ValueError(f"Matrix dimensions must be positive. Got {rows}x{cols}")
             self._obj = _MatrixCpp(rows, cols)
 
-        # Case 2: Initialize from NumPy array or Python List
+        # Case 2: Initialize from Data
         elif len(args) == 1:
             data = args[0]
-            
-            # Convert lists to numpy for unified processing
+
             if isinstance(data, list):
-                data = np.array(data, dtype=np.float64)
-            
-            if isinstance(data, np.ndarray):
-                if data.ndim != 2:
-                    # raise ValueError(f"Expected 2D array, but got {data.ndim}D.")
-                    data = data.reshape(len(data), 1)
+                # Check if list is 1D or 2D
+                if len(data) > 0 and not isinstance(data[0], list):
+                    # 1D List -> Column Vector (N x 1)
+                    self._obj = _MatrixCpp(len(data), 1, data)
+                else:
+                    # 2D List or empty list
+                    self._obj = _MatrixCpp(data)
                 
+            # Optional: Keep NumPy support if the user happens to have it
+            elif HAS_NUMPY and isinstance(data, np.ndarray):
                 data = np.ascontiguousarray(data, dtype=np.float64)
-                
                 rows, cols = data.shape
                 self._obj = _MatrixCpp(rows, cols)
-                
                 np.copyto(np.asarray(self._obj), data)
             else:
-                raise TypeError("Input data must be a list of lists or a numpy.ndarray.")
+                raise TypeError("Input data must be a list of lists (or numpy.ndarray if installed).")
 
         else:
             raise TypeError(
-                "Matrix constructor expects (rows, cols), list[list], or np.ndarray"
+                "Matrix constructor expects (rows, cols), list, or np.ndarray"
             )
-        
+            
     # --------------------------------
     # Propertys
     # --------------------------------
@@ -229,7 +234,15 @@ class Matrix:
         """
         Convert the Daedalus Matrix back to a NumPy array.
         Useful for visualization or using other Python ML tools.
+
+        Raises:
+            ImportError numpy is not installed.
+
+        Returns:
+            np.ndarray: Numpy Array
         """
+        if not HAS_NUMPY:
+            raise ImportError("NumPy is required for to_numpy(). Install it via 'pip install numpy'")
         return np.asarray(self._obj)
 
     def transpose(self) -> Matrix:

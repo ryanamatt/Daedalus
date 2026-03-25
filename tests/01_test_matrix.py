@@ -105,11 +105,11 @@ class TestInit:
     # --- bad-type path ---
 
     def test_init_wrong_single_arg_type(self):
-        with pytest.raises(TypeError, match="list of lists or a numpy.ndarray"):
+        with pytest.raises(TypeError):
             Matrix("not a matrix")
 
     def test_init_wrong_single_arg_int(self):
-        with pytest.raises(TypeError, match="list of lists or a numpy.ndarray"):
+        with pytest.raises(TypeError):
             Matrix(42)
 
     # --- bad-signature path ---
