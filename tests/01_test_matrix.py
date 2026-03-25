@@ -289,6 +289,13 @@ class TestInstanceMethods:
         assert t(2, 0) == pytest.approx(m(0, 2))
         assert t(0, 1) == pytest.approx(m(1, 0))
 
+    def test_trace(self):
+        a = Matrix.Diagonal([1, 2, 3])
+        assert a.trace() == 6.0
+
+        b = Matrix([[1, 2], [1, 2], [1, 2]])
+        assert b.trace() == 3.0
+
     def test_get_row(self):
         m = make_2x3()
         row = m.get_row(1)
@@ -372,6 +379,18 @@ class TestDunderAccess:
             assert isinstance(row, Matrix)
             assert row.cols == 3
 
+    def test_round(self):
+        a = Matrix([2.12978, 2.14056])
+        a_r_2 = round(a, 2)
+        assert a_r_2[0, 0] == 2.13
+        assert a_r_2[1, 0] == 2.14
+
+        a_r_3 = round(a, 3)
+        assert a_r_3[0, 0] == 2.13
+        assert a_r_3[1, 0] == 2.141
+
+        assert a[0, 0] == 2.12978
+        assert a[1, 0] == 2.14056
 
 # ===========================================================================
 # 6. Arithmetic operators
@@ -501,6 +520,33 @@ class TestArithmetic:
         c = a * b
         assert c.rows == 512
         assert c.cols == 512
+
+    def test_matmul(self):
+        a = make_2x3()
+        b = make_3x2()
+        c = a @ b
+        assert c.rows == 2
+        assert c.cols == 2
+
+        a = Matrix([[2, 2], [2, 2]])
+        b = Matrix([[2, 2], [2, 2]])
+        c = a @ b
+        c_np = np.array([[8, 8], [8, 8]])
+        np.testing.assert_array_almost_equal(c.to_numpy(), c_np)
+
+    # --- Power ---
+
+    def test_power(self):
+        a = Matrix.Diagonal([1, 2, 3]) ** 2
+        b = np.diag(np.array([1, 4, 9]))
+        np.testing.assert_array_almost_equal(a.to_numpy(), b)
+
+    # --- abs ---
+
+    def test_abs(self):
+        a = Matrix([[2, -2], [-2, 2]])
+        b = np.array([[2, 2], [2, 2]])
+        np.testing.assert_array_almost_equal(abs(a).to_numpy(), b)
 
     # --- Unary ---
 
