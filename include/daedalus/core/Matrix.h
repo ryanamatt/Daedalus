@@ -110,7 +110,7 @@ public:
     Matrix<double> create_identity(size_t r, size_t c) {
         Matrix mat(r, c);
         for (size_t i = 0; i < mat.rows(); ++i) {
-            mat(i, i) = 1;
+            mat(i, i) = 1.0;
         }
         return mat;
     }
