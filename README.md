@@ -105,6 +105,8 @@ The C++ source is documented using Doxygen-style comments. To generate the HTML 
 
 Contributions are **more than welcome**\! Since this is a learning project, I'd love to see pull requests that modernize the C++ code or fix edge cases. If you find a better way to do something, please open an issue or a PR because I would love to learn. Feel free to make pull requests that add new Machine Learning Algorithms as well.
 
+See [Contributing](CONTRIBUTING.md)
+
 ## **🏛️ About the Name**
 
 The name **Daedalus** is inspired by the master craftsman of Greek mythology. Like Daedalus building wings of wax and feathers, this project is about building the tools to understand complex systems from the ground up. Just remember the disclaimer: if you fly too close to the sun (or a massive production dataset), things might get messy.

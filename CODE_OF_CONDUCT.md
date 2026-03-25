@@ -56,6 +56,6 @@ If you experience or witness unacceptable behavior, please report it by contacti
 
 ## Attribution
 
-We are committed to making participation in this project a positive experience for everyone. Thank you for helping make Forgerly a welcoming community.
+We are committed to making participation in this project a positive experience for everyone. Thank you for helping make Daedalus a welcoming community.
 
 ---

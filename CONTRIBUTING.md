@@ -19,7 +19,7 @@ Daedalus uses a hybrid stack. To contribute code, you'll need to handle both C++
 
 1. **Fork and Clone:**
 
-```{Bash}  
+```Bash  
    git clone git@github.com:ryanamatt/Daedalus.git
    cd daedalus
 ```
@@ -28,7 +28,7 @@ Daedalus uses a hybrid stack. To contribute code, you'll need to handle both C++
 
 We recommend using a virtual environment to manage dependencies:
 
-```{Bash}  
+```Bash  
    python -m venv venv  
    # Activate (Windows)  
    venv\Scripts\activate  
@@ -39,13 +39,13 @@ We recommend using a virtual environment to manage dependencies:
 3. **Editable Install:**  
    Since we use scikit-build-core, you can install the library in editable mode. This allows you to run Python tests that call your compiled C++ code:  
 
-``` {Bash}
+```Bash
    pip install -e ".[test]"
 ```
 
 Or you may use the clean_build scripts which removes compiled binaries and rebuilds the project in editable mode.
 
-```{Bash}
+```Bash
 # Linux/MacOS
 tools/clean_build.sh
 
@@ -67,7 +67,7 @@ tools/clean_build.ps1
 
 We use pytest for our testing suite. Before submitting a PR, please ensure all tests pass:
 
-```{Bash}
+```Bash
 pytest
 ```
 
@@ -80,7 +80,7 @@ If you add a new model (e.g., DecisionTree), please add a corresponding test fil
 * **Modern C++:** Aim for idiomatic C++17. Prefer std::vector and smart pointers over raw arrays/pointers.  
 * **Documentation:** Use Doxygen-style comments in header files (.h).
 
-```{C++}  
+```C++  
   /** 
    * @brief Performs matrix multiplication.  
    * @param other The matrix to multiply with.  
