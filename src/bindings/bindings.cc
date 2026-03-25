@@ -56,7 +56,6 @@ PYBIND11_MODULE(daedalus_cpp, m) {
     // --- Matrix Bindings ---
     py::class_<Matrix<double>>(m, "Matrix", py::buffer_protocol())
         .def(py::init<size_t, size_t>())
-        .def("create_identity", &Matrix<double>::create_identity, py::arg("r"), py::arg("c"))
         .def("__getitem__", [](const Matrix<double> &self, py::object index_obj) -> py::object {
             // Check if the input is actually a tuple
             if (!py::isinstance<py::tuple>(index_obj)) {
@@ -118,6 +117,12 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def("to_string", &Matrix<double>::to_string)
         .def_property_readonly("rows", &Matrix<double>::rows)
         .def_property_readonly("cols", &Matrix<double>::cols)
+        .def_static("create_filled_matrix", &Matrix<double>::create_filled_matrix, 
+            py::arg("rows"), py::arg("cols"), py::arg("fill_value"))
+        .def_static("created_diagonal_vector", &Matrix<double>::create_diagonal_vector, 
+            py::arg("rows"), py::arg("cols"), py::arg("values"))
+        .def_static("created_diagonal_scaler", &Matrix<double>::create_diagonal_scaler, 
+            py::arg("rows"), py::arg("cols"), py::arg("value"))
         .def_buffer([](Matrix<double> &m) -> py::buffer_info {
             return py::buffer_info(
                 m.data_ptr(),                               /* Pointer to buffer */

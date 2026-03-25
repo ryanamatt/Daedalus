@@ -127,20 +127,6 @@ class TestInit:
             Matrix("a", "b")
 
 # ===========================================================================
-# 2. Static Methods
-# ===========================================================================
-
-class TestStaticMethods:
-    def test_identity(self):
-        m = Matrix.Identity(3)
-
-        assert m.rows == 3
-        assert m.cols == 3
-    
-        m_np = m.to_numpy()
-        assert np.testing.assert_almost_equal(m_np, np.array([[1, 0, 0], [0, 1, 1], [0, 0, 1]]))
-
-# ===========================================================================
 # 2. Properties
 # ===========================================================================
 
@@ -193,6 +179,65 @@ class TestStaticMethods:
     def test_random_unsupported_distribution(self):
         with pytest.raises(ValueError, match="Unsupported distribution"):
             Matrix.random(3, 3, distribution="poisson")
+    
+    def test_identity(self):
+        m = Matrix.Identity(3)
+
+        assert m.rows == 3
+        assert m.cols == 3
+    
+        for i in range(m.rows):
+            for j in range(m.cols):
+                assert m(i, j) == 1 if i == j else m(i, j) == 0
+
+    def test_fill(self):
+        m = Matrix.Fill(3, 3, 4)
+        assert m.rows == 3
+        assert m.cols == 3
+        for i in range(m.rows):
+            for j in range(m.cols):
+                assert m(i, j) == 4
+
+    def test_diagonal_square_list(self):
+        ls = [1, 2, 3]
+        m = Matrix.Diagonal(ls)
+        assert m.rows == 3
+        assert m.cols == 3
+        for i in range(m.rows):
+            for j in range(m.cols):
+                assert m(i, j) == ls[i] if i == j else m(i, j) == 0
+
+    def test_diagonal_square_list_row_col(self):
+        ls = [1, 2, 3]
+        m = Matrix.Diagonal(3, 5, ls)
+        assert m.rows == 3
+        assert m.cols == 5
+        for i in range(m.rows):
+            for j in range(m.cols):
+                assert m(i, j) == ls[i] if i == j else m(i, j) == 0
+
+    def test_diagnoal_value_row_col(self):
+        m = Matrix.Diagonal(3, 5, 2)
+        assert m.rows == 3
+        assert m.cols == 5
+        for i in range(m.rows):
+            for j in range(m.cols):
+                assert m(i, j) == 2 if i == j else m(i, j) == 0
+
+    def test_out_of_bounds_ls(self):
+        m = Matrix.Diagonal(2, 2, [1, 2, 3])
+        assert m.rows == 2
+        assert m.cols == 2
+        
+        assert m(0, 0) == 1 and m(1, 1) == 2
+        assert m(0, 1) == 0 and m(1, 0) == 0
+
+    def test_diagonal_exceptions(self):
+        with pytest.raises(TypeError):
+            m = Matrix.Diagonal(1)
+
+        with pytest.raises(TypeError):
+            m = Matrix.Diagonal(1, 2)
 
 
 # ===========================================================================

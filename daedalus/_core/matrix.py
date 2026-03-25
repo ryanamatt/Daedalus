@@ -19,11 +19,16 @@ class Matrix:
     def __init__(self, *args, **kwargs):
         """
         Initialize the Matrix.
+
+        This methods supports 2 ways to create a Matrix.
+        1. Enter Rows, Cols to create a Matrix filled with all Zeros with dimensions.
+        2. Create Matrix with filled values from 1D list, 2D list, 1D Numpy Array, or
+            2D Numpy Array.
         
         Args:
             rows (int): Number of rows (if using dimensions). 
             cols (int): Number of columns (if using dimensions). 
-            data (list[list[float]]): A nested list to populate the matrix.
+            data (list[list[int | float]] | list[int | float] | np.ndarray): A nested list to populate the matrix.
             
         Raises:
             ValueError: If dimensions are invalid or input data is inconsistent.
@@ -63,25 +68,6 @@ class Matrix:
                 "Matrix constructor expects (rows, cols), list[list], or np.ndarray"
             )
         
-    # --------------------------------
-    # Static Methods
-    # --------------------------------
-
-    @staticmethod
-    def Identity(self, size: int) -> Matrix:
-        """
-        Creates an Identity Matrix with the given rows and cols.
-        
-        Args:
-            size (int): Number of rows & cols.
-
-        Returns:
-            An Identity Matrix with given dimensions.
-        """
-        m = Matrix(size, size)
-        m._obj = self._obj.create_identity(size, size)
-        return m
-
     # --------------------------------
     # Propertys
     # --------------------------------
@@ -128,6 +114,112 @@ class Matrix:
             raise ValueError(f"Unsupported distribution: {distribution}")
         
         return Matrix(data)
+    
+    @staticmethod
+    def Ones(rows: int, cols: int) -> Matrix:
+        """
+        Creates a Matrix filled with ones with the given rows and cols.
+        
+        Args:
+            rows (int): Number of rows.
+            cols (int): Number of cols.
+
+        Returns:
+            An Matrix with given dimensions filled with ones.
+        """
+        m = Matrix(rows, cols)
+        m._obj = _MatrixCpp.create_filled_matrix(rows, cols, 1)
+        return m
+    
+    @staticmethod
+    def Fill(rows: int, cols: int, fill_value: int | float) -> Matrix:
+        """
+        Creates a Matrix filled with the fill value with the given rows and cols.
+        
+        Args:
+            rows (int): Number of rows.
+            cols (int): Number of cols.
+            fill_value (int | float): The value to fill the Matrix with.
+
+        Returns:
+            An Matrix with given dimensions filled with fill value.
+        """
+        m = Matrix(rows, cols)
+        m._obj = _MatrixCpp.create_filled_matrix(rows, cols, float(fill_value))
+        return m
+
+    @staticmethod
+    def Identity(size: int) -> Matrix:
+        """
+        Creates an Identity Matrix with the given rows and cols.
+        
+        Args:
+            size (int): Number of rows & cols.
+
+        Returns:
+            An Identity Matrix with given dimensions.
+        """
+        m = Matrix(size, size)
+        m._obj = _MatrixCpp.created_diagonal_scaler(size, size, 1)
+        return m
+    
+    @staticmethod
+    @typing.overload
+    def Diagonal(rows: int, cols: int, value: int | float) -> Matrix: ...
+
+    @staticmethod
+    @typing.overload
+    def Diagonal(rows: int, cols: int, values: list[int | float]) -> Matrix: ...
+
+    @staticmethod
+    @typing.overload
+    def Diagonal(values: list[int | float]) -> Matrix: ...
+
+    @staticmethod
+    def Diagonal(*args, **kwargs) -> Matrix:
+        """
+        Creates a Diagonal Matrix.
+
+        This method supports three different call signatures:
+        1. Diagonal(rows, cols, value) -> Scaled diagonal matrix.
+        2. Diagonal(rows, cols, values_list) -> Diagonal matrix from list.
+        3. Diagonal(values_list) -> Square diagonal matrix from list.
+
+        Args:
+            rows (int, optional): Number of rows.
+            cols (int, optional): Number of columns.
+            value (int | float, optional): A single value to fill the diagonal.
+            values (list, optional): A list of values to place on the diagonal.
+
+        Returns:
+            Matrix: A new Matrix instance with the specified diagonal.
+        """
+        if len(args) == 1 and isinstance(args[0], list):
+            value_or_list = args[0]
+            rows = len(args[0])
+            cols = len(args[0])
+
+        elif len(args) == 3:
+            rows, cols, value_or_list = args
+
+        else:
+            raise TypeError("Invalid Arguments. list[int | float] for Square Matrix or" \
+            "(rows: int, cols: int, value_or_list = list[int | float]) "
+            "or (rows: int, cols: int, value_or_list: int | float")
+
+        m = Matrix(rows, cols)
+        if isinstance(value_or_list, list):
+            m._obj = _MatrixCpp.created_diagonal_vector(rows, cols, value_or_list)
+
+        elif isinstance(value_or_list, int) or isinstance(value_or_list, float):
+            m._obj = _MatrixCpp.created_diagonal_scaler(rows, cols, value_or_list)
+
+        else:
+            raise TypeError("Invalid Arguments. list[int | float] for Square Matrix or" \
+            "(rows: int, cols: int, value_or_list = list[int | float]) "
+            "or (rows: int, cols: int, value_or_list: int | float")
+        
+        return m
     
     # --------------------------------
     # Callable Functions
