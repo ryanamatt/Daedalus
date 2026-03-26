@@ -309,6 +309,9 @@ class Matrix:
         result._obj = self._obj.reshape(new_rows, new_cols)
         return result
 
+    def flatten(self) -> Matrix:
+        return self.reshape(1, self.rows * self.cols)
+
     def transpose(self) -> Matrix:
         """Returns a new Matrix that is the transpose of the current matrix."""
         res = Matrix(0, 0)

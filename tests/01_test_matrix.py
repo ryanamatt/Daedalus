@@ -317,6 +317,12 @@ class TestInstanceMethods:
         with pytest.raises(ValueError):
             m.reshape(2, 6)
 
+    def test_flatten(self):
+        m = Matrix([[1, 2], [3, 4]])
+        m_flat = m.flatten()
+        assert m_flat.rows == 1 and m_flat.cols == 4
+        assert m_flat[0, 0] == 1 and m_flat[0, 3] == 4
+
     def test_transpose(self):
         m = make_2x3()
         t = m.transpose()
