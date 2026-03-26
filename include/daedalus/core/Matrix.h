@@ -405,6 +405,21 @@ public:
         return result;
     }
 
+    /** @brief In-place scalar division. */
+    Matrix& operator/=(const T& scalar) {
+        for (size_t i = 0; i < data.size(); ++i) {
+            data[i] /= scalar;
+        }
+        return *this;
+    }
+
+    /** @brief Scalar multiplication (Matrix / scalar). */
+    Matrix operator/(const T& scalar) const {
+        Matrix result = *this;
+        result /= scalar;
+        return result;
+    }
+
     /**
      * @brief Takes each element in the Matrix and raises it to the power of the power_value
      * @param power_value The value of the power to raise each element to
@@ -505,6 +520,45 @@ public:
     }
 
     /**
+     * @brief Takes the noramlization of the Matrix.
+     * @param type The string of the type of normalization.
+     * @return The norm of the Matrix
+     */
+    T norm(const std::string& type = "fro") const {
+        if (type == "fro") { // Frobenius Norm: Square root of sum of squares
+            T sum = 0;
+            for (const auto& val : data) {
+                sum += val * val;
+            }
+            return std::sqrt(sum);
+        }
+
+        else if (type == "1") { // 1-Norm: Maximum absolute column sum
+            T max_col_sum = 0;
+            for (size_t j = 0; j < num_cols; ++j) {
+                T current_col_sum = 0;
+                for (size_t i = 0; i < num_rows; ++i) {
+                    current_col_sum += std::abs((*this)(i, j));
+                }
+                max_col_sum = std::max(max_col_sum, current_col_sum);
+            } 
+            return max_col_sum;
+        }
+
+        else if (type == "inf") { // Infinity Norm: Maximum absolute row sum
+            T max_row_sum = 0;
+            for (size_t i = 0; i < num_rows; ++i) {
+                T current_row_sum = 0;
+                for (size_t j = 0; j < num_cols; ++j) {
+                    current_row_sum += std::abs((*this)(i, j));
+                }
+                max_row_sum = std::max(max_row_sum, current_row_sum);
+            }
+            return max_row_sum;
+        }
+    }
+
+    /**
      * @brief Computes the sum of elements along a specified axis.
      * @param axis 0 to sum down columns (result is 1 x cols), 
      * 1 to sum across rows (result is rows x 1).
@@ -548,6 +602,76 @@ public:
             sum += static_cast<double>(data[i]);
         }
         return sum;
+    }
+
+    /**
+     * @brief Takes the means along the desired axis.
+     * @param axis The axis to take the mean along.
+     * @return A Matrix of the resulting mean along the desired axis.
+     */
+    Matrix mean(int axis) {
+        Matrix<double> result = sum(axis);
+
+        if (axis == 0) {
+            for (size_t j = 0; j < num_cols; ++j) {
+                result(0, j) = result(0, j) / num_cols;
+            }
+        }
+
+        else if (axis == 1) {
+            for (size_t i = 0; i < num_rows; ++i) {
+                result(i, 0) = result(i, 0) / num_rows;
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * @brief Calculates the standard deviation along an axis.
+     * @param axis The desired axis.
+     * @return The standard deviation Matrix along desired axis.
+     */
+    Matrix standard_deviation(int axis) {
+        Matrix<double> means = mean(axis);
+        Matrix<double> result(means.rows(), means.cols());
+
+        if (axis == 0) {
+            double sum_deviation = 0.0;
+            for (size_t j = 0; j < num_cols; ++j) {
+                double variance_sum = 0.0;
+                for (size_t i = 0; i < num_rows; ++i) {
+                    double diff = static_cast<double>((*this)(i, j)) - means(0, j);
+                    variance_sum += diff * diff;
+                }
+                result(0, j) = std::sqrt(variance_sum / num_rows);
+            }
+        }
+
+        else if (axis == 1) {
+            for (size_t i = 0; i < num_rows; ++i) {
+                double variance_sum = 0.0;
+                for (size_t j = 0; j < num_cols; ++j) {
+                    double diff = static_cast<double>((*this)(i, j)) - means(i, 0);
+                    variance_sum += diff * diff;
+                }
+                result(i, 0) = std::sqrt(variance_sum / num_cols);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * @brief Reshapes a Matrix to the new dimensions. 
+     * Assumes new_rows * new_cols == num_rows * num_cols
+     * @param new_rows Int value for new_rows.
+     * @param new_cols Int value for new_cols
+     * @return A Matrix with the new shape.
+     */
+    Matrix reshape(int new_rows, int new_cols) {
+        Matrix<T> result(new_rows, new_cols, this->data);
+        return result;
     }
 
     /**

@@ -92,6 +92,27 @@ class Matrix:
         """Returns the dimentions of the matrix (rows, cols)"""
         return (self.rows, self.cols)
     
+    @property
+    def size(self) -> int:
+        """Returns the total number of elements (rows * cols)"""
+        return self.rows * self.cols
+    
+    @property
+    def T(self) -> Matrix:
+        """Returns a new Matrix that is the transpose of the current matrix."""
+        return self.transpose()
+    
+    @property
+    def is_square(self) -> bool:
+        """Determines if Matrix is square. Returns True if rows == cols"""
+        return self.rows == self.cols
+    
+    @property
+    def is_vector(self) -> bool:
+        """Returns whether or not Matrix is a vector. (rows == 1 or cols == 1)"""
+        return (self.rows == 1 or self.cols == 1)
+
+
     # --------------------------------
     # Static Methods
     # --------------------------------
@@ -119,6 +140,21 @@ class Matrix:
             raise ValueError(f"Unsupported distribution: {distribution}")
         
         return Matrix(data)
+    
+    @staticmethod
+    def Zeros(rows: int, cols: int) -> Matrix:
+        """
+        Creates a Matrix filled with zeros with the given rows and cols.
+        
+        Args:
+            rows (int): Number of rows.
+            cols (int): Number of cols.
+
+        Returns:
+            An Matrix with given dimensions filled with zeros.
+        """
+        return Matrix(rows, cols)
+
     
     @staticmethod
     def Ones(rows: int, cols: int) -> Matrix:
@@ -245,6 +281,23 @@ class Matrix:
             raise ImportError("NumPy is required for to_numpy(). Install it via 'pip install numpy'")
         return np.asarray(self._obj)
 
+    def norm(self, type: str = "fro"):
+        """
+        Computes the matrix norm.
+        
+        Args:
+            type: The order of the norm. 
+                'fro' (default) for Frobenius, 
+                1 or '1' for the max absolute column sum,
+                'inf' for the max absolute row sum.
+        """
+        norm_type = str(type).lower()
+        accepted_norm_types = ['fro', '1', 'inf']
+        if norm_type not in accepted_norm_types:
+            raise ValueError("Supported Norm types 'fro', '1', 'inf'.")
+        
+        return self._obj.norm(norm_type)
+
     def sum(self, axis: int | None = None) -> Matrix | float:
         """
         Sums all the elements for the desired axis returning a 1 x n or n x 1 
@@ -270,6 +323,68 @@ class Matrix:
         
         else:
             raise TypeError("Axis is None for Sum all Elements returning double or [0, 1] for Row, Col Matrix Sum")
+        
+    def mean(self, axis: int) -> Matrix:
+        """
+        Find Mean all the elements for the desired axis returning a 1 x n or n x 1 
+        Matrix of the mean.
+
+        Args:
+            axis (int): Determines Which axis to find Mean along (0 for Row, 1 for Col)
+
+        Raises:
+            TypeError is axis is not an int between 0,1.
+
+        Returns:
+            Matrix
+        """
+        if axis != 0 and axis != 1:
+            raise TypeError("Axis must be 0 or 1")
+        
+        result = Matrix(1, self.cols) if axis == 0 else Matrix(self.rows, 1)
+        result._obj = self._obj.mean(axis)
+        return result
+
+    def std(self, axis: int) -> Matrix:
+        """
+        Find stanrd deviation all the elements for the desired axis returning a 1 x n or n x 1 Matrix.
+
+        Args:
+            axis (int): Determines Which axis to find std along (0 for Row, 1 for Col)
+
+        Raises:
+            TypeError is axis is not an int between 0,1.
+
+        Returns:
+            Matrix
+        """
+        if axis != 0 and axis != 1:
+            raise TypeError("Axis must be 0 or 1")
+        
+        result = Matrix(1, self.cols) if axis == 0 else Matrix(self.rows, 1)
+        result._obj = self._obj.standard_deviation(axis)
+        return result
+        
+    def reshape(self, new_rows: int, new_cols: int) -> Matrix:
+        """
+        Reshapes the Matrix to the new dimensions.
+        
+        Args:
+            new_rows (int): The new rows dimension.
+            new_cols (int): The new cols dimension.
+
+        Raises:
+            ValueError: When (new_rows * new_cols) != self.rows * self.cols
+
+        Returns:
+            A Matrix with the new dimensions.
+        """
+        result = Matrix(new_rows, new_cols)
+        result._obj = self._obj.reshape(new_rows, new_cols)
+        return result
+
+    def flatten(self) -> Matrix:
+        return self.reshape(1, self.rows * self.cols)
 
     def transpose(self) -> Matrix:
         """Returns a new Matrix that is the transpose of the current matrix."""

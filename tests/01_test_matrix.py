@@ -152,6 +152,19 @@ class TestProperties:
         m = make_2x3()
         assert m.shape == (m.rows, m.cols)
 
+    def size(self):
+        assert Matrix(5, 3).size == 15
+        assert Matrix(10, 10) == 100
+
+    def is_square(self):
+        assert Matrix(4, 4)
+        assert Matrix(4, 3) == False
+
+    def is_vector(self):
+        assert Matrix(10, 1)
+        assert Matrix (1, 3)
+        assert Matrix (1, 1)
+        assert Matrix(2, 3) == False
 
 # ===========================================================================
 # 3. Static Methods
@@ -196,6 +209,13 @@ class TestStaticMethods:
         for i in range(m.rows):
             for j in range(m.cols):
                 assert m(i, j) == 1 if i == j else m(i, j) == 0
+
+    def test_zeros(self):
+        m = Matrix.Zeros(2, 2)
+        assert m.rows == 2 and m.cols == 2
+        for i in range(2):
+            for j in range(2):
+                assert m[i, j] == 0
 
     def test_ones(self):
         m = Matrix.Ones(2, 2)
@@ -277,6 +297,16 @@ class TestInstanceMethods:
             with pytest.raises(ImportError, match="NumPy is required"):
                 m.to_numpy()
 
+    def test_norm(self):
+        m = Matrix([[1, -2], [3, 4]])
+        assert m.norm() == m.norm("fro")
+        assert round(m.norm(), 2) == 5.48
+        assert m.norm(1) == 6.0
+        assert m.norm("inf") == 7.0
+
+        with pytest.raises(ValueError):
+            m.norm("2")
+
     def test_sum(self):
         a = Matrix([[1, 2], [3, 4]])
         a_s_0 = a.sum(axis=0)
@@ -290,6 +320,55 @@ class TestInstanceMethods:
 
         with pytest.raises(TypeError):
             assert a.sum("axis=1")
+
+    def test_mean(self):
+        m = Matrix([[1, -2], [3, 4]])
+        m_u0 = m.mean(axis=0)
+        assert m_u0.rows == 1 and m_u0.cols == 2
+        assert m_u0[0, 0] == 2 and m_u0[0, 1] == 1
+        m_u1 = m.mean(axis=1)
+        assert m_u1.rows == 2 and m_u1.cols == 1
+        assert m_u1[0, 0] == -0.5 and m_u1[1, 0] == 3.5
+
+        with pytest.raises(TypeError):
+            m.mean(axis=2)
+
+        with pytest.raises(TypeError):
+            m.mean('2')
+
+    def test_std(self):
+        m = Matrix([[1, -2], [3, 4]])
+        m_s0 = m.std(axis=0)
+        assert m_s0.rows == 1 and m_s0.cols == 2
+        assert m_s0[0, 0] == 1 and m_s0[0, 1] == 3
+        m_s1 = m.std(axis=1)
+        assert m_s1.rows == 2 and m_s1.cols == 1
+        assert m_s1[0, 0] == 1.5 and m_s1[1, 0] == 0.5
+
+        with pytest.raises(TypeError):
+            m.std(axis=2)
+
+        with pytest.raises(TypeError):
+            m.std('2')
+
+    def test_reshape(self):
+        m = Matrix([1, 2, 3 ,4])
+        m_rs = m.reshape(2, 2)
+        assert m_rs.rows == 2 and m_rs.cols == 2
+        assert m_rs[0, 0] == 1 and m_rs[0, 1] == 2
+        assert m_rs[1, 0] == 3 and m_rs[1, 1] == 4
+
+        with pytest.raises(ValueError):
+            m.reshape(3, 1)
+
+        with pytest.raises(ValueError):
+            m.reshape(2, 6)
+
+    def test_flatten(self):
+        m = Matrix([[1, 2], [3, 4]])
+        m_flat = m.flatten()
+        assert m_flat.rows == 1 and m_flat.cols == 4
+        assert m_flat[0, 0] == 1 and m_flat[0, 3] == 4
 
     def test_transpose(self):
         m = make_2x3()
