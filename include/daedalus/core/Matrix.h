@@ -505,6 +505,52 @@ public:
     }
 
     /**
+     * @brief Computes the sum of elements along a specified axis.
+     * @param axis 0 to sum down columns (result is 1 x cols), 
+     * 1 to sum across rows (result is rows x 1).
+     * @return Matrix<double> containing the sums.
+     * @throws std::invalid_argument if axis is not 0 or 1.
+     */
+    Matrix<double> sum(int axis) const {
+        if (axis == 0) {
+            // Collapses rows: Result is a 1 x num_cols matrix
+
+            Matrix<double> result(1, num_cols);
+
+            for (size_t j = 0; j < num_cols; ++j) {
+                double col_sum = 0;
+                for (size_t i = 0; i < num_rows; ++i) {
+                    col_sum += static_cast<double>((*this)(i, j));
+                }
+                result(0, j) = col_sum;
+            }
+            return result;
+        }
+        else if (axis == 1) {
+        // Collapses columns: Result is a num_rows x 1 matrix
+        Matrix<double> result(num_rows, 1);
+        for (size_t i = 0; i < num_rows; ++i) {
+            double row_sum = 0;
+            for (size_t j = 0; j < num_cols; ++j) {
+                row_sum += static_cast<double>((*this)(i, j));
+            }
+            result(i, 0) = row_sum;
+        }
+        return result;
+        }  else {
+            throw std::invalid_argument("Axis must be 0 (columns) or 1 (rows).");
+        }
+    }
+
+    double sum_all_elements() const {
+        double sum = 0.0;
+        for (size_t i = 0; i < data.size(); ++i) {
+            sum += static_cast<double>(data[i]);
+        }
+        return sum;
+    }
+
+    /**
      * @brief Computes the transpose of the matrix.
      * * Uses a blocked (tiled) approach to optimize L1/L2 cache hits, 
      * significantly improving performance for large matrices.
