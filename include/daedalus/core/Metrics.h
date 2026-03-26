@@ -74,6 +74,8 @@ namespace Metrics {
             ss_tot += tot * tot;
         }
 
+        if (ss_tot == 0.0) return (ss_res == 0.0) ? 1.0 : 0.0;
+
         return 1.0 - (ss_res / ss_tot);
     }
 
