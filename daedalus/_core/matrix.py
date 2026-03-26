@@ -141,6 +141,21 @@ class Matrix:
         return Matrix(data)
     
     @staticmethod
+    def Zeros(rows: int, cols: int) -> Matrix:
+        """
+        Creates a Matrix filled with zeros with the given rows and cols.
+        
+        Args:
+            rows (int): Number of rows.
+            cols (int): Number of cols.
+
+        Returns:
+            An Matrix with given dimensions filled with zeros.
+        """
+        return Matrix(rows, cols)
+
+    
+    @staticmethod
     def Ones(rows: int, cols: int) -> Matrix:
         """
         Creates a Matrix filled with ones with the given rows and cols.

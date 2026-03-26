@@ -210,6 +210,14 @@ class TestStaticMethods:
             for j in range(m.cols):
                 assert m(i, j) == 1 if i == j else m(i, j) == 0
 
+    def test_zeros(self):
+        m = Matrix.Zeros(2, 2)
+        assert m.rows == 2 and m.cols == 2
+        for i in range(2):
+            for j in range(2):
+                assert m[i, j] == 0
+
+
     def test_ones(self):
         m = Matrix.Ones(2, 2)
         assert m.rows == 2
