@@ -167,6 +167,7 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def("abs", &Matrix<double>::abs)
         .def("sum", &Matrix<double>::sum, py::arg("axis"))
         .def("sum_all_elements", &Matrix<double>::sum_all_elements)
+        .def("reshape", &Matrix<double>::reshape, py::arg("new_rows"), py::arg("new_cols"))
         .def("transpose", &Matrix<double>::transpose)
         .def("det", &Matrix<double>::det)
         .def("inverse", &Matrix<double>::inverse)

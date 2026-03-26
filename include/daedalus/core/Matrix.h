@@ -550,6 +550,11 @@ public:
         return sum;
     }
 
+    Matrix reshape(int new_rows, int new_cols) {
+        Matrix<T> result(new_rows, new_cols, this->data);
+        return result;
+    }
+
     /**
      * @brief Computes the transpose of the matrix.
      * * Uses a blocked (tiled) approach to optimize L1/L2 cache hits, 

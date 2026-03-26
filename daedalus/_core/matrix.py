@@ -290,6 +290,24 @@ class Matrix:
         
         else:
             raise TypeError("Axis is None for Sum all Elements returning double or [0, 1] for Row, Col Matrix Sum")
+        
+    def reshape(self, new_rows: int, new_cols: int) -> Matrix:
+        """
+        Reshapes the Matrix to the new dimensions.
+        
+        Args:
+            new_rows (int): The new rows dimension.
+            new_cols (int): The new cols dimension.
+
+        Raises:
+            ValueError: When (new_rows * new_cols) != self.rows * self.cols
+
+        Returns:
+            A Matrix with the new dimensions.
+        """
+        result = Matrix(new_rows, new_cols)
+        result._obj = self._obj.reshape(new_rows, new_cols)
+        return result
 
     def transpose(self) -> Matrix:
         """Returns a new Matrix that is the transpose of the current matrix."""
