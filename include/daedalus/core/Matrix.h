@@ -613,14 +613,49 @@ public:
         Matrix<double> result = sum(axis);
 
         if (axis == 0) {
-            for (int j = 0; j < num_cols; ++j) {
-                result(0, j) == result(0, j) / num_cols;
+            for (size_t j = 0; j < num_cols; ++j) {
+                result(0, j) = result(0, j) / num_cols;
             }
         }
 
         else if (axis == 1) {
-            for (int i = 0; i < num_rows; ++i) {
-                result(i, 0) == result(i, 0) / num_rows;
+            for (size_t i = 0; i < num_rows; ++i) {
+                result(i, 0) = result(i, 0) / num_rows;
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * @brief Calculates the standard deviation along an axis.
+     * @param axis The desired axis.
+     * @return The standard deviation Matrix along desired axis.
+     */
+    Matrix standard_deviation(int axis) {
+        Matrix<double> means = mean(axis);
+        Matrix<double> result(means.rows(), means.cols());
+
+        if (axis == 0) {
+            double sum_deviation = 0.0;
+            for (size_t j = 0; j < num_cols; ++j) {
+                double variance_sum = 0.0;
+                for (size_t i = 0; i < num_rows; ++i) {
+                    double diff = static_cast<double>((*this)(i, j)) - means(0, j);
+                    variance_sum += diff * diff;
+                }
+                result(0, j) = std::sqrt(variance_sum / num_rows);
+            }
+        }
+
+        else if (axis == 1) {
+            for (size_t i = 0; i < num_rows; ++i) {
+                double variance_sum = 0.0;
+                for (size_t j = 0; j < num_cols; ++j) {
+                    double diff = static_cast<double>((*this)(i, j)) - means(i, 0);
+                    variance_sum += diff * diff;
+                }
+                result(i, 0) = std::sqrt(variance_sum / num_cols);
             }
         }
 

@@ -339,10 +339,30 @@ class Matrix:
             Matrix
         """
         if axis != 0 and axis != 1:
-            raise TypeError("Axis is None for Sum all Elements returning double or [0, 1] for Row, Col Matrix Sum")
+            raise TypeError("Axis must be 0 or 1")
         
         result = Matrix(1, self.cols) if axis == 0 else Matrix(self.rows, 1)
         result._obj = self._obj.mean(axis)
+        return result
+
+    def std(self, axis: int) -> Matrix:
+        """
+        Find stanrd deviation all the elements for the desired axis returning a 1 x n or n x 1 Matrix.
+
+        Args:
+            axis (int): Determines Which axis to find std along (0 for Row, 1 for Col)
+
+        Raises:
+            TypeError is axis is not an int between 0,1.
+
+        Returns:
+            Matrix
+        """
+        if axis != 0 and axis != 1:
+            raise TypeError("Axis must be 0 or 1")
+        
+        result = Matrix(1, self.cols) if axis == 0 else Matrix(self.rows, 1)
+        result._obj = self._obj.standard_deviation(axis)
         return result
         
     def reshape(self, new_rows: int, new_cols: int) -> Matrix:

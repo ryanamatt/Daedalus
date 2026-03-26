@@ -325,16 +325,31 @@ class TestInstanceMethods:
         m = Matrix([[1, -2], [3, 4]])
         m_u0 = m.mean(axis=0)
         assert m_u0.rows == 1 and m_u0.cols == 2
-        assert m_u0[0, 0] == 4 and m_u0[0, 1] == 2
+        assert m_u0[0, 0] == 2 and m_u0[0, 1] == 1
         m_u1 = m.mean(axis=1)
         assert m_u1.rows == 2 and m_u1.cols == 1
-        assert m_u1[0, 0] == -1 and m_u1[1, 0] == 7
+        assert m_u1[0, 0] == -0.5 and m_u1[1, 0] == 3.5
 
         with pytest.raises(TypeError):
             m.mean(axis=2)
 
         with pytest.raises(TypeError):
             m.mean('2')
+
+    def test_std(self):
+        m = Matrix([[1, -2], [3, 4]])
+        m_s0 = m.std(axis=0)
+        assert m_s0.rows == 1 and m_s0.cols == 2
+        assert m_s0[0, 0] == 1 and m_s0[0, 1] == 3
+        m_s1 = m.std(axis=1)
+        assert m_s1.rows == 2 and m_s1.cols == 1
+        assert m_s1[0, 0] == 1.5 and m_s1[1, 0] == 0.5
+
+        with pytest.raises(TypeError):
+            m.std(axis=2)
+
+        with pytest.raises(TypeError):
+            m.std('2')
 
     def test_reshape(self):
         m = Matrix([1, 2, 3 ,4])
