@@ -277,6 +277,20 @@ class TestInstanceMethods:
             with pytest.raises(ImportError, match="NumPy is required"):
                 m.to_numpy()
 
+    def test_sum(self):
+        a = Matrix([[1, 2], [3, 4]])
+        a_s_0 = a.sum(axis=0)
+        assert a_s_0[0, 0] == 4 and a_s_0[0, 1] == 6
+        a_s_1 = a.sum(axis=1)
+        assert a_s_1[0, 0] == 3 and a_s_1[1, 0] == 7
+        assert a.sum() == 10.0
+
+        with pytest.raises(TypeError):
+            assert a.sum(3)
+
+        with pytest.raises(TypeError):
+            assert a.sum("axis=1")
+
     def test_transpose(self):
         m = make_2x3()
         t = m.transpose()

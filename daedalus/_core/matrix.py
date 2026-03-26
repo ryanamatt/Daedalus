@@ -245,6 +245,32 @@ class Matrix:
             raise ImportError("NumPy is required for to_numpy(). Install it via 'pip install numpy'")
         return np.asarray(self._obj)
 
+    def sum(self, axis: int | None = None) -> Matrix | float:
+        """
+        Sums all the elements for the desired axis returning a 1 x n or n x 1 
+        Matrix of the sums. If axis is left None it will return a float of 
+        the sum of all elements in the Matrix.
+
+        Args:
+            axis (int | None, optional): Determines Which axis to Summate along (0 for Row, 1 for Col)
+
+        Raises:
+            TypeError is axis is not an int between 0,1 or not None.
+
+        Returns:
+            Matrix | float
+        """
+        if isinstance(axis, int) and (axis == 0 or axis == 1):
+            result = Matrix(1, self.cols) if axis == 0 else Matrix(self.rows, 1)
+            result._obj = self._obj.sum(axis)
+            return result
+        
+        elif axis is None:
+            return self._obj.sum_all_elements()
+        
+        else:
+            raise TypeError("Axis is None for Sum all Elements returning double or [0, 1] for Row, Col Matrix Sum")
+
     def transpose(self) -> Matrix:
         """Returns a new Matrix that is the transpose of the current matrix."""
         res = Matrix(0, 0)
