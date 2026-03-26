@@ -280,6 +280,23 @@ class Matrix:
             raise ImportError("NumPy is required for to_numpy(). Install it via 'pip install numpy'")
         return np.asarray(self._obj)
 
+    def norm(self, type: str = "fro"):
+        """
+        Computes the matrix norm.
+        
+        Args:
+            type: The order of the norm. 
+                'fro' (default) for Frobenius, 
+                1 or '1' for the max absolute column sum,
+                'inf' for the max absolute row sum.
+        """
+        norm_type = str(type).lower()
+        accepted_norm_types = ['fro', '1', 'inf']
+        if norm_type not in accepted_norm_types:
+            raise ValueError("Supported Norm types 'fro', '1', 'inf'.")
+        
+        return self._obj.norm(norm_type)
+
     def sum(self, axis: int | None = None) -> Matrix | float:
         """
         Sums all the elements for the desired axis returning a 1 x n or n x 1 

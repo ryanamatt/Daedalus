@@ -505,6 +505,45 @@ public:
     }
 
     /**
+     * @brief Takes the noramlization of the Matrix.
+     * @param type The string of the type of normalization.
+     * @return The norm of the Matrix
+     */
+    T norm(const std::string& type = "fro") const {
+        if (type == "fro") { // Frobenius Norm: Square root of sum of squares
+            T sum = 0;
+            for (const auto& val : data) {
+                sum += val * val;
+            }
+            return std::sqrt(sum);
+        }
+
+        else if (type == "1") { // 1-Norm: Maximum absolute column sum
+            T max_col_sum = 0;
+            for (size_t j = 0; j < num_cols; ++j) {
+                T current_col_sum = 0;
+                for (size_t i = 0; i < num_rows; ++i) {
+                    current_col_sum += std::abs((*this)(i, j));
+                }
+                max_col_sum = std::max(max_col_sum, current_col_sum);
+            } 
+            return max_col_sum;
+        }
+
+        else if (type == "inf") { // Infinity Norm: Maximum absolute row sum
+            T max_row_sum = 0;
+            for (size_t i = 0; i < num_rows; ++i) {
+                T current_row_sum = 0;
+                for (size_t j = 0; j < num_cols; ++j) {
+                    current_row_sum += std::abs((*this)(i, j));
+                }
+                max_row_sum = std::max(max_row_sum, current_row_sum);
+            }
+            return max_row_sum;
+        }
+    }
+
+    /**
      * @brief Computes the sum of elements along a specified axis.
      * @param axis 0 to sum down columns (result is 1 x cols), 
      * 1 to sum across rows (result is rows x 1).

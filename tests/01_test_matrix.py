@@ -217,7 +217,6 @@ class TestStaticMethods:
             for j in range(2):
                 assert m[i, j] == 0
 
-
     def test_ones(self):
         m = Matrix.Ones(2, 2)
         assert m.rows == 2
@@ -297,6 +296,16 @@ class TestInstanceMethods:
         with patch.object(matrix_module, 'HAS_NUMPY', False):
             with pytest.raises(ImportError, match="NumPy is required"):
                 m.to_numpy()
+
+    def test_norm(self):
+        m = Matrix([[1, -2], [3, 4]])
+        assert m.norm() == m.norm("fro")
+        assert round(m.norm(), 2) == 5.48
+        assert m.norm(1) == 6.0
+        assert m.norm("inf") == 7.0
+
+        with pytest.raises(ValueError):
+            m.norm("2")
 
     def test_sum(self):
         a = Matrix([[1, 2], [3, 4]])
