@@ -321,6 +321,21 @@ class TestInstanceMethods:
         with pytest.raises(TypeError):
             assert a.sum("axis=1")
 
+    def test_mean(self):
+        m = Matrix([[1, -2], [3, 4]])
+        m_u0 = m.mean(axis=0)
+        assert m_u0.rows == 1 and m_u0.cols == 2
+        assert m_u0[0, 0] == 4 and m_u0[0, 1] == 2
+        m_u1 = m.mean(axis=1)
+        assert m_u1.rows == 2 and m_u1.cols == 1
+        assert m_u1[0, 0] == -1 and m_u1[1, 0] == 7
+
+        with pytest.raises(TypeError):
+            m.mean(axis=2)
+
+        with pytest.raises(TypeError):
+            m.mean('2')
+
     def test_reshape(self):
         m = Matrix([1, 2, 3 ,4])
         m_rs = m.reshape(2, 2)

@@ -405,6 +405,21 @@ public:
         return result;
     }
 
+    /** @brief In-place scalar division. */
+    Matrix& operator/=(const T& scalar) {
+        for (size_t i = 0; i < data.size(); ++i) {
+            data[i] /= scalar;
+        }
+        return *this;
+    }
+
+    /** @brief Scalar multiplication (Matrix / scalar). */
+    Matrix operator/(const T& scalar) const {
+        Matrix result = *this;
+        result /= scalar;
+        return result;
+    }
+
     /**
      * @brief Takes each element in the Matrix and raises it to the power of the power_value
      * @param power_value The value of the power to raise each element to
@@ -589,6 +604,36 @@ public:
         return sum;
     }
 
+    /**
+     * @brief Takes the means along the desired axis.
+     * @param axis The axis to take the mean along.
+     * @return A Matrix of the resulting mean along the desired axis.
+     */
+    Matrix mean(int axis) {
+        Matrix<double> result = sum(axis);
+
+        if (axis == 0) {
+            for (int j = 0; j < num_cols; ++j) {
+                result(0, j) == result(0, j) / num_cols;
+            }
+        }
+
+        else if (axis == 1) {
+            for (int i = 0; i < num_rows; ++i) {
+                result(i, 0) == result(i, 0) / num_rows;
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * @brief Reshapes a Matrix to the new dimensions. 
+     * Assumes new_rows * new_cols == num_rows * num_cols
+     * @param new_rows Int value for new_rows.
+     * @param new_cols Int value for new_cols
+     * @return A Matrix with the new shape.
+     */
     Matrix reshape(int new_rows, int new_cols) {
         Matrix<T> result(new_rows, new_cols, this->data);
         return result;
