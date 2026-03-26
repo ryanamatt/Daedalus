@@ -11,6 +11,7 @@
 #define MATRIX_H
 
 #include <vector>
+#include <tuple>
 #include <stdexcept>
 #include <sstream>
 #include <functional>
@@ -525,6 +526,86 @@ public:
         return result;
     }
 
+    /**
+     * @brief Computes the determinant of the matrix using LU Decomposition. Assumes Matrix is Square.
+     * @return double The determinant value.
+     */
+    double det() const {
+        if (num_rows == 0) return 1.0;
+        if (num_rows == 1) return static_cast<double>(data[0]);
+
+        Matrix<T> temp = this->copy();
+        double determinant = 1.0;
+        size_t n = num_rows;
+
+        for (size_t i = 0; i < n; ++ i) {
+            size_t pivot = i;
+            for (size_t j = i + 1; j < n; ++j) {
+                if (std::abs(temp(i, j)) > std::abs(temp(pivot, i))) {
+                    pivot = j;
+                }
+            }
+
+            if (std::abs(temp(pivot, i)) < 1e-12) { return 0.0; } // Singular Matrix
+
+            if (pivot != i) {
+                temp.swap_rows(i, pivot);
+                determinant *= -1.0;
+            }
+
+            determinant *= temp(i, i);
+
+            for (size_t j = i + 1; j < n; ++j) {
+                T factor = temp(j, i) / temp(i, i);
+                for (size_t k = i + 1; k < n; ++k) {
+                    temp(j, k) -= factor * temp(i, k);
+                }
+            }
+        }
+        return determinant;
+    }
+
+    /**
+     * @brief Computes the inverse of the matrix using Gauss-Jordan elimination.
+     * @return Matrix<T> The inverse matrix.
+     */
+    Matrix<T> inverse() const {
+        double determinant = this->det();
+        if (std::abs(determinant) < 1e-12) {
+            throw std::logic_error("Matrix is singular and cannot be inverted.");
+        }
+
+        size_t n = num_rows;
+        Matrix<T> aug = this->copy();
+        Matrix<T> inv = Matrix<T>::create_diagonal_scaler(n, n, 1.0); // Start with Identity
+
+        for (size_t i = 0; i < n; ++i) {
+            // Pivot selection
+            size_t pivot = i;
+            for (size_t j = i + 1; j < n; ++j) {
+                if (std::abs(aug(j, i)) > std::abs(aug(pivot, i))) pivot = j;
+            }
+
+            aug.swap_rows(i, pivot);
+            inv.swap_rows(i, pivot);
+
+            // Scale pivot row to 1
+            T div = aug(i, i);
+            aug.scale_row(i, 1.0 / div);
+            inv.scale_row(i, 1.0 / div);
+
+            // Eliminate other entries in column
+            for (size_t j = 0; j < n; ++j) {
+                if (i != j) {
+                    T factor = aug(j, i);
+                    aug.add_scaled_row(i, j, -factor);
+                    inv.add_scaled_row(i, j, -factor);
+                }
+            }
+        }
+        return inv;
+    }
+
     double trace() const {
         size_t diag_len = std::min({num_rows, num_cols});
         double trace_val = 0.0;
@@ -534,6 +615,103 @@ public:
         return trace_val;
     }
 
+    // --- Decomposition ---
+    
+    /**
+     * @brief Computes SVD using a basic Jacobi rotation algorithm.
+     * All singular values and corresponding vector components below the 
+     * specified tolerance are strictly set to 0.
+     * @return std::tuple containing U, Sigma (as a vector), and V_transpose.
+     */
+    std::tuple<Matrix<T>, std::vector<T>, Matrix<T>> svd(double tol = 1e-12, int max_sweeps = 100) const {  
+        size_t m = num_rows;
+        size_t n = num_cols;
+        
+        Matrix<T> U_mat = this->copy(); 
+        Matrix<T> V_mat = Matrix<T>::create_diagonal_scaler(n, n, 1.0);
+        std::vector<T> sigma(n);
+
+        // --- Phase 1: Jacobi Rotations ---
+        for (int sweep = 0; sweep < max_sweeps; ++sweep) {
+            double max_off_diag = 0.0;
+            for (size_t j = 0; j < n - 1; ++j) {
+                for (size_t k = j + 1; k < n; ++k) {
+                    double a_jj = 0.0, a_kk = 0.0, a_jk = 0.0;
+                    
+                    for (size_t i = 0; i < m; ++i) {
+                        a_jj += U_mat(i, j) * U_mat(i, j);
+                        a_kk += U_mat(i, k) * U_mat(i, k);
+                        a_jk += U_mat(i, j) * U_mat(i, k);
+                    }
+
+                    max_off_diag = std::max(max_off_diag, std::abs(a_jk));
+
+                    if (std::abs(a_jk) > tol) {
+                        double tau = (a_kk - a_jj) / (2.0 * a_jk);
+                        double t = (tau >= 0 ? 1.0 : -1.0) / (std::abs(tau) + std::sqrt(1.0 + tau * tau));
+                        double c = 1.0 / std::sqrt(1.0 + t * t);
+                        double s = t * c;
+
+                        for (size_t i = 0; i < m; ++i) {
+                            T tmp_j = U_mat(i, j);
+                            U_mat(i, j) = c * tmp_j - s * U_mat(i, k);
+                            U_mat(i, k) = s * tmp_j + c * U_mat(i, k);
+                        }
+                        for (size_t i = 0; i < n; ++i) {
+                            T tmp_vj = V_mat(i, j);
+                            V_mat(i, j) = c * tmp_vj - s * V_mat(i, k);
+                            V_mat(i, k) = s * tmp_vj + c * V_mat(i, k);
+                        }
+                    }
+                }
+            }
+            if (max_off_diag < tol) break;
+        }
+
+        // --- Phase 2: Normalization & Below-Tolerance Zeroing ---
+        for (size_t j = 0; j < n; ++j) {
+            double norm_sq = 0.0;
+            for (size_t i = 0; i < m; ++i) norm_sq += U_mat(i, j) * U_mat(i, j);
+            double norm = std::sqrt(norm_sq);
+            
+            // If the norm is below tolerance, the singular value is 0
+            if (norm <= tol) {
+                sigma[j] = static_cast<T>(0);
+                for (size_t i = 0; i < m; ++i) U_mat(i, j) = static_cast<T>(0);
+            } else {
+                sigma[j] = static_cast<T>(norm);
+                for (size_t i = 0; i < m; ++i) U_mat(i, j) /= norm;
+            }
+        }
+
+        // --- Phase 3: Sorting ---
+        std::vector<size_t> indices(n);
+        for (size_t i = 0; i < n; ++i) indices[i] = i;
+
+        std::sort(indices.begin(), indices.end(), [&](size_t a, size_t b) {
+            return sigma[a] > sigma[b];
+        });
+
+        std::vector<T> sorted_sigma(n);
+        Matrix<T> sorted_U(m, n);
+        Matrix<T> sorted_V(n, n);
+
+        for (size_t j = 0; j < n; ++j) {
+            size_t old_idx = indices[j];
+            
+            // Apply the zeroing check again during final assignment
+            sorted_sigma[j] = (sigma[old_idx] <= tol) ? static_cast<T>(0) : sigma[old_idx];
+            
+            for (size_t i = 0; i < m; ++i) {
+                sorted_U(i, j) = U_mat(i, old_idx);
+            }
+            for (size_t i = 0; i < n; ++i) {
+                sorted_V(i, j) = V_mat(i, old_idx);
+            }
+        }
+
+        return {sorted_U, sorted_sigma, sorted_V.transpose()};
+    }
 };
 
 #endif // MATRIX_H

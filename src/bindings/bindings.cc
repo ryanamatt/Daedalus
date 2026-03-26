@@ -166,7 +166,14 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def("round", &Matrix<double>::round, py::arg("places"))
         .def("abs", &Matrix<double>::abs)
         .def("transpose", &Matrix<double>::transpose)
-        .def("trace", &Matrix<double>::trace);
+        .def("det", &Matrix<double>::det)
+        .def("inverse", &Matrix<double>::inverse)
+        .def("trace", &Matrix<double>::trace)
+        .def("svd", [](const Matrix<double> &self) {
+            auto [u, s, v] = self.svd();
+            // Return as (U, Sigma_Vector, V)
+            return py::make_tuple(u, s, v);}
+        );
 
     // --- DataFrame Bindings ---
     py::class_<DataFrame>(m, "DataFrame")

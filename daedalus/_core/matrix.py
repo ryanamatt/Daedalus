@@ -255,6 +255,20 @@ class Matrix:
         """Returns a new Matrix that is the Trace of the current Matrix."""
         return self._obj.trace()
 
+    def det(self) -> float:
+        """Returns the Determinant of a Matrix."""
+        if self.rows != self.cols:
+            raise ValueError("Must be a Square Matrix to take Determininat (rows == cols).")
+        return self._obj.det()
+
+    def inverse(self) -> Matrix:
+        """Returns the inverse of the matrix."""
+        if self.rows != self.cols:
+            raise ValueError("Must be a Square Matrix to take inverse (rows == cols).")
+        res = Matrix(0, 0)
+        res._obj = self._obj.inverse()
+        return res
+
     def get_row(self, idx: int) -> Matrix:
         """Returns a specific row as a new Matrix."""
         res = Matrix(0, 0)
@@ -270,6 +284,27 @@ class Matrix:
         res = Matrix(0, 0)
         res._obj = self._obj.copy()
         return res
+
+    # -------------------------------- 
+    # Decomposition Methods 
+    # --------------------------------
+
+    def svd(self) -> tuple[Matrix, list[float], Matrix]:
+        """
+        Computes the Singular Value Decomposition.
+
+        Returns (U, singular_values, V) such that A = U * diag(S) * V^T
+        """
+        u_raw, s_list, v_raw = self._obj.svd()
+        
+        # Wrap the C++ objects back into the Python Matrix class
+        U = Matrix(0, 0)
+        U._obj = u_raw
+        
+        V = Matrix(0, 0)
+        V._obj = v_raw
+        
+        return U, s_list, V
     
     # -------------------------------- 
     # Dunder Methods 

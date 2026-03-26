@@ -14,9 +14,6 @@ Run:
 from __future__ import annotations
 import pytest
 import numpy as np
-import sys
-import builtins
-import importlib
 from unittest.mock import patch
 from daedalus import Matrix
 import daedalus._core.matrix as matrix_module
@@ -296,6 +293,26 @@ class TestInstanceMethods:
         b = Matrix([[1, 2], [1, 2], [1, 2]])
         assert b.trace() == 3.0
 
+    def test_det(self):
+        a = Matrix([[1, 2], [3, 4]])
+        assert a.det() == -2.0
+        b = Matrix([[1, 2, 3], [4, 5, 6], [7, 7, 9]])
+        assert b.det() == -6.0
+        c = Matrix([[1, 2], [3, 4], [5, 6]])
+        with pytest.raises(ValueError):
+            c.det()
+
+    def test_inverse(self):
+        a = Matrix([[1, 2], [3, 4]])
+        assert a.rows == 2 and a.cols == 2
+        a = a.inverse()
+        assert round(a[0, 0]) == -2 and round(a[0, 1]) == 1
+        assert round(a[1, 0], 2) == 1.5 and round(a[1, 1], 2) == -0.5
+
+        c = Matrix([[1, 2], [3, 4], [5, 6]])
+        with pytest.raises(ValueError):
+            c.inverse()
+ 
     def test_get_row(self):
         m = make_2x3()
         row = m.get_row(1)
@@ -393,7 +410,29 @@ class TestDunderAccess:
         assert a[1, 0] == 2.14056
 
 # ===========================================================================
-# 6. Arithmetic operators
+# 6. Test Decomposition Methods
+# ===========================================================================
+
+class TestDecomposition:
+
+    def test_svd(self):
+        A = Matrix([[3, 2, 2], [2, 3, -2]])
+        U, sigma, V = A.svd()
+        U_rd = round(U, 3)
+        assert U_rd[0, 0] == 0.707 and U_rd[0, 1] == 0.707 and U_rd[0, 2] == 0
+        assert U_rd[1, 0] == 0.707 and U_rd[1, 1] == -0.707 and U_rd[1, 2] == 0
+
+        sigma = [round(s, 1) for s in sigma]
+        assert sigma == [5.0, 3.0, 0.0]
+
+        V_rd = round(V, 3)
+        assert V_rd[0, 0] == 0.707 and V_rd[0, 1] == 0.707 and V_rd[0, 2] == 0
+        assert V_rd[1, 0] == 0.236 and V_rd[1, 1] == -0.236 and V_rd[1, 2] == 0.943
+        assert V_rd[2, 0] == 0.667 and V_rd[2, 1] == -0.667 and V_rd[2, 2] == -0.333
+
+
+# ===========================================================================
+# 7. Arithmetic operators
 # ===========================================================================
 
 class TestArithmetic:
@@ -562,7 +601,7 @@ class TestArithmetic:
 
 
 # ===========================================================================
-# 7. Comparison operators
+# 8. Comparison operators
 # ===========================================================================
 
 class TestComparisons:
@@ -646,7 +685,7 @@ class TestComparisons:
         assert (m != "not a matrix") is True
 
 # ===========================================================================
-# 8. Integration / round-trip tests
+# 9. Integration / round-trip tests
 # ===========================================================================
 
 class TestIntegration:
