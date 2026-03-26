@@ -304,6 +304,19 @@ class TestInstanceMethods:
         with pytest.raises(TypeError):
             assert a.sum("axis=1")
 
+    def test_reshape(self):
+        m = Matrix([1, 2, 3 ,4])
+        m_rs = m.reshape(2, 2)
+        assert m_rs.rows == 2 and m_rs.cols == 2
+        assert m_rs[0, 0] == 1 and m_rs[0, 1] == 2
+        assert m_rs[1, 0] == 3 and m_rs[1, 1] == 4
+
+        with pytest.raises(ValueError):
+            m.reshape(3, 1)
+
+        with pytest.raises(ValueError):
+            m.reshape(2, 6)
+
     def test_transpose(self):
         m = make_2x3()
         t = m.transpose()
