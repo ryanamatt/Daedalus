@@ -92,6 +92,26 @@ class Matrix:
         """Returns the dimentions of the matrix (rows, cols)"""
         return (self.rows, self.cols)
     
+    @property
+    def size(self) -> int:
+        """Returns the total number of elements (rows * cols)"""
+        return self.rows * self.cols
+    
+    @property
+    def T(self) -> Matrix:
+        """Returns a new Matrix that is the transpose of the current matrix."""
+        return self.transpose()
+    
+    @property
+    def is_square(self) -> bool:
+        """Determines if Matrix is square. Returns True if rows == cols"""
+        return self.rows == self.cols
+    
+    @property
+    def is_vector(self) -> bool:
+        """Returns whether or not Matrix is a vector. (rows == 1 or cols == 1)"""
+        return (self.rows == 1 or self.cols == 1)
+
     # --------------------------------
     # Static Methods
     # --------------------------------

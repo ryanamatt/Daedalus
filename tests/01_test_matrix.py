@@ -152,6 +152,19 @@ class TestProperties:
         m = make_2x3()
         assert m.shape == (m.rows, m.cols)
 
+    def size(self):
+        assert Matrix(5, 3).size == 15
+        assert Matrix(10, 10) == 100
+
+    def is_square(self):
+        assert Matrix(4, 4)
+        assert Matrix(4, 3) == False
+
+    def is_vector(self):
+        assert Matrix(10, 1)
+        assert Matrix (1, 3)
+        assert Matrix (1, 1)
+        assert Matrix(2, 3) == False
 
 # ===========================================================================
 # 3. Static Methods
