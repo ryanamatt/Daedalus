@@ -906,15 +906,15 @@ public:
      * @brief Computes SVD using a basic Jacobi rotation algorithm.
      * All singular values and corresponding vector components below the 
      * specified tolerance are strictly set to 0.
-     * @return std::tuple containing U, Sigma (as a vector), and V_transpose.
+     * @return std::tuple containing 3 Matrices U, Sigma, and V_transpose.
      */
-    std::tuple<Matrix<T>, std::vector<T>, Matrix<T>> svd(double tol = 1e-12, int max_sweeps = 100) const {  
+    std::tuple<Matrix<T>, Matrix<T>, Matrix<T>> svd(double tol = 1e-12, int max_sweeps = 100) const {  
         size_t m = num_rows;
         size_t n = num_cols;
         
         Matrix<T> U_mat = this->copy(); 
         Matrix<T> V_mat = Matrix<T>::create_diagonal_scaler(n, n, 1.0);
-        std::vector<T> sigma(n);
+        std::vector<T> sigma_vec(n);
 
         // --- Phase 1: Jacobi Rotations ---
         for (int sweep = 0; sweep < max_sweeps; ++sweep) {
@@ -961,10 +961,10 @@ public:
             
             // If the norm is below tolerance, the singular value is 0
             if (norm <= tol) {
-                sigma[j] = static_cast<T>(0);
+                sigma_vec[j] = static_cast<T>(0);
                 for (size_t i = 0; i < m; ++i) U_mat(i, j) = static_cast<T>(0);
             } else {
-                sigma[j] = static_cast<T>(norm);
+                sigma_vec[j] = static_cast<T>(norm);
                 for (size_t i = 0; i < m; ++i) U_mat(i, j) /= norm;
             }
         }
@@ -974,29 +974,33 @@ public:
         for (size_t i = 0; i < n; ++i) indices[i] = i;
 
         std::sort(indices.begin(), indices.end(), [&](size_t a, size_t b) {
-            return sigma[a] > sigma[b];
+            return sigma_vec[a] > sigma_vec[b];
         });
 
-        std::vector<T> sorted_sigma(n);
-        Matrix<T> sorted_U(m, n);
+        size_t k = std::min(m, n);
+        Matrix<T> sorted_U(m, k);
+        Matrix<T> sorted_sigma(k, n);
         Matrix<T> sorted_V(n, n);
 
-        for (size_t j = 0; j < n; ++j) {
+        for (size_t j = 0; j < k; ++j) {
             size_t old_idx = indices[j];
-            
-            // Apply the zeroing check again during final assignment
-            sorted_sigma[j] = (sigma[old_idx] <= tol) ? static_cast<T>(0) : sigma[old_idx];
-            
+                        
             for (size_t i = 0; i < m; ++i) {
                 sorted_U(i, j) = U_mat(i, old_idx);
             }
+
+            if (j < m) {
+                sorted_sigma(j, j) = (sigma_vec[old_idx] <= tol) ? static_cast<T>(0) : sigma_vec[old_idx];
+            }
+
             for (size_t i = 0; i < n; ++i) {
                 sorted_V(i, j) = V_mat(i, old_idx);
             }
         }
 
-        return {sorted_U, sorted_sigma, sorted_V.transpose()};
+        return {sorted_U, sorted_sigma, sorted_V};
     }
+
 };
 
 #endif // MATRIX_H

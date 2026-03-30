@@ -551,18 +551,21 @@ class Matrix:
         """
         Computes the Singular Value Decomposition.
 
-        Returns (U, singular_values, V) such that A = U * diag(S) * V^T
+        Returns (U, singular_values, V) such that A = U * diag(S) * V.transpose()
         """
-        u_raw, s_list, v_raw = self._obj.svd()
+        u_raw, s_raw, v_raw = self._obj.svd()
         
         # Wrap the C++ objects back into the Python Matrix class
         U = Matrix(0, 0)
         U._obj = u_raw
+
+        s = Matrix(0, 0)
+        s._obj = s_raw
         
         V = Matrix(0, 0)
         V._obj = v_raw
         
-        return U, s_list, V
+        return U, s, V
     
     # -------------------------------- 
     # Dunder Methods 
@@ -666,7 +669,7 @@ class Matrix:
         res = Matrix(0, 0)
         if isinstance(other, Matrix):
             if self.cols != other.rows:
-                raise ValueError("Matrix Rows must equal other Matrixs cols.")
+                raise ValueError("Matrix cols must equal other Matrixs rows.")
             
             if self.rows >= 1024 and other.cols >= 1024:
                 res._obj = self._obj.multiply_tiled(other._obj)

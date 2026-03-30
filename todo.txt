@@ -1,8 +1,5 @@
 rank() 
 
-set_row(idx, row_matrix)
-set_col(idx, col_matrix)
-
 apply(lambda func)
 
 hstack(other)

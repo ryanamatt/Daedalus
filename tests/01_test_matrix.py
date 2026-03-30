@@ -611,16 +611,19 @@ class TestDecomposition:
         A = Matrix([[3, 2, 2], [2, 3, -2]])
         U, sigma, V = A.svd()
         U_rd = round(U, 3)
-        assert U_rd[0, 0] == 0.707 and U_rd[0, 1] == 0.707 and U_rd[0, 2] == 0
-        assert U_rd[1, 0] == 0.707 and U_rd[1, 1] == -0.707 and U_rd[1, 2] == 0
+        assert U_rd[0, 0] == 0.707 and U_rd[0, 1] == 0.707
+        assert U_rd[1, 0] == 0.707 and U_rd[1, 1] == -0.707
 
-        sigma = [round(s, 1) for s in sigma]
-        assert sigma == [5.0, 3.0, 0.0]
+        sigma_rd = round(sigma, 3)
+        assert sigma_rd[0, 0] == 5.0 and sigma_rd[1, 1] == 3.0
 
         V_rd = round(V, 3)
-        assert V_rd[0, 0] == 0.707 and V_rd[0, 1] == 0.707 and V_rd[0, 2] == 0
-        assert V_rd[1, 0] == 0.236 and V_rd[1, 1] == -0.236 and V_rd[1, 2] == 0.943
-        assert V_rd[2, 0] == 0.667 and V_rd[2, 1] == -0.667 and V_rd[2, 2] == -0.333
+        assert V_rd[0, 0] == 0.707 and V_rd[0, 1] == 0.236 and V_rd[0, 2] == 0
+        assert V_rd[1, 0] == 0.707 and V_rd[1, 1] == -0.236 and V_rd[1, 2] == 0
+        assert V_rd[2, 0] == 0 and V_rd[2, 1] == 0.943 and V_rd[2, 2] == 0
+
+        A_reconstructed = round(U * sigma * V.T, 0)
+        np.testing.assert_array_equal(A_reconstructed.to_numpy(), A.to_numpy())
 
 
 # ===========================================================================

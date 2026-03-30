@@ -186,7 +186,7 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def("trace", &Matrix<double>::trace)
         .def("svd", [](const Matrix<double> &self) {
             auto [u, s, v] = self.svd();
-            // Return as (U, Sigma_Vector, V)
+            // Return as (U, Sigma, V)
             return py::make_tuple(u, s, v);}
         );
 
