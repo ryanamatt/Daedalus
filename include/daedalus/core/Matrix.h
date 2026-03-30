@@ -16,6 +16,8 @@
 #include <sstream>
 #include <functional>
 #include <cmath>
+#include <algorithm>
+#include <iterator>
 
 template <typename T>
 
@@ -211,6 +213,24 @@ public:
         }
 
         return row_matrix;
+    }
+
+    /**
+     * @brief Extracts a single col from the matrix.
+     * @param idx The index of the col to extract (0-indexed).
+     * @return Matrix<T> A new matrix of shape (rows, 1).
+     * @throws std::out_of_range If col index > than number of col.
+     */
+    Matrix<T> get_col(int idx) const {
+        if (idx < 0 || idx >= num_cols) {
+            throw std::out_of_range("Col index out of bounds");
+        }
+        Matrix<T> col_matrix(num_rows, 1);
+        for (size_t i = 0; i < num_rows; ++i) {
+            col_matrix(i, 0) = (*this)(i, idx);
+        }
+
+        return col_matrix;
     }
 
     /** @brief Creates a deepcopy of the matrix */
@@ -520,6 +540,17 @@ public:
     }
 
     /**
+     * @brief Returns whether or not said item exists in the Matrix.
+     * @returns True if value exists in Matrix, otherwise False.
+     */
+    bool contains(const T value) {
+        for (size_t i = 0; i < data.size(); ++i) {
+            if (data[i] == value) return true;
+        }
+        return false;
+    }
+
+    /**
      * @brief Takes the noramlization of the Matrix.
      * @param type The string of the type of normalization.
      * @return The norm of the Matrix
@@ -628,6 +659,41 @@ public:
     }
 
     /**
+     * @brief Calculates the variance along an axis.
+     * @param axis The desired axis.
+     * @return The variance Matrix along desired axis.
+     */
+    Matrix variance(int axis) {
+        Matrix<double> means = mean(axis);
+        Matrix<double> result(means.rows(), means.cols());
+
+        if (axis == 0) {
+            double sum_deviation = 0.0;
+            for (size_t j = 0; j < num_cols; ++j) {
+                double variance_sum = 0.0;
+                for (size_t i = 0; i < num_rows; ++i) {
+                    double diff = static_cast<double>((*this)(i, j)) - means(0, j);
+                    variance_sum += diff * diff;
+                }
+                result(0, j) = (variance_sum / num_rows);
+            }
+        }
+
+        else if (axis == 1) {
+            for (size_t i = 0; i < num_rows; ++i) {
+                double variance_sum = 0.0;
+                for (size_t j = 0; j < num_cols; ++j) {
+                    double diff = static_cast<double>((*this)(i, j)) - means(i, 0);
+                    variance_sum += diff * diff;
+                }
+                result(i, 0) = (variance_sum / num_cols);
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * @brief Calculates the standard deviation along an axis.
      * @param axis The desired axis.
      * @return The standard deviation Matrix along desired axis.
@@ -672,6 +738,34 @@ public:
     Matrix reshape(int new_rows, int new_cols) {
         Matrix<T> result(new_rows, new_cols, this->data);
         return result;
+    }
+
+    /**
+     * @brief Finds the index of the maximum value.
+     * @return The index (row, col) of the maximum value.
+     */
+    std::tuple<int, int> argmax_global() {
+        auto max_it = std::max_element(data.begin(), data.end());
+        int max_index_1d = std::distance(data.begin(), max_it);
+        // Convert to 2D coordinates
+        int row = max_index_1d / num_cols;
+        int col = max_index_1d % num_cols;
+
+        return {static_cast<int>(row), static_cast<int>(col)};
+    }
+
+    /**
+    * @brief Finds the index of the minimum value.
+    * @return The index (row, col) of the minimum value.
+    */
+    std::tuple<int, int> argmin_global() {
+        auto min_it = std::min_element(data.begin(), data.end());
+        int min_index_1d = std::distance(data.begin(), min_it);
+        // Convert to 2D coordinates
+        int row = min_index_1d / num_cols;
+        int col = min_index_1d % num_cols;
+
+        return {static_cast<int>(row), static_cast<int>(col)};
     }
 
     /**

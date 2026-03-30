@@ -152,19 +152,40 @@ class TestProperties:
         m = make_2x3()
         assert m.shape == (m.rows, m.cols)
 
-    def size(self):
+    def test_size(self):
         assert Matrix(5, 3).size == 15
-        assert Matrix(10, 10) == 100
+        assert Matrix(10, 10).size == 100
 
-    def is_square(self):
-        assert Matrix(4, 4)
-        assert Matrix(4, 3) == False
+    def test_is_square(self):
+        assert Matrix(4, 4).is_square
+        assert Matrix(4, 3).is_square == False
 
-    def is_vector(self):
-        assert Matrix(10, 1)
-        assert Matrix (1, 3)
-        assert Matrix (1, 1)
-        assert Matrix(2, 3) == False
+    def test_is_vector(self):
+        assert Matrix(10, 1).is_vector
+        assert Matrix (1, 3).is_vector
+        assert Matrix (1, 1).is_vector
+        assert Matrix(2, 3).is_vector == False
+
+    def test_is_symmetric(self):
+        a = Matrix([[1, 2], [2, 1]])
+        assert a.is_symmetric
+        b = Matrix([[1, 2], [1, 2]])
+        assert b.is_symmetric == False
+
+    def test_is_orthogonal(self):
+        a = Matrix([[1, 0], [0, 1]])
+        assert a.is_orthogonal
+
+        b = Matrix([[1, 2], [3, 4]])
+        assert not b.is_orthogonal
+
+    def test_is_invertible(self):
+        a = Matrix([[1, 0], [0, 1]])
+        assert a.is_invertible
+
+        b = Matrix([[1, 1], [4, 4]])
+        assert not b.is_invertible
+
 
 # ===========================================================================
 # 3. Static Methods
@@ -199,6 +220,11 @@ class TestStaticMethods:
     def test_random_unsupported_distribution(self):
         with pytest.raises(ValueError, match="Unsupported distribution"):
             Matrix.random(3, 3, distribution="poisson")
+
+    def test_random_import(self):
+        with patch.object(matrix_module, 'HAS_NUMPY', False):
+            with pytest.raises(ImportError):
+                Matrix.random(5, 5)
     
     def test_identity(self):
         m = Matrix.Identity(3)
@@ -336,6 +362,21 @@ class TestInstanceMethods:
         with pytest.raises(TypeError):
             m.mean('2')
 
+    def test_variance(self):
+        m = Matrix([[1, -2], [3, 4]])
+        m_s0 = m.variance(axis=0)
+        assert m_s0.rows == 1 and m_s0.cols == 2
+        assert m_s0[0, 0] == 1 and m_s0[0, 1] == 9
+        m_s1 = m.variance(axis=1)
+        assert m_s1.rows == 2 and m_s1.cols == 1
+        assert m_s1[0, 0] == 2.25 and m_s1[1, 0] == 0.25
+
+        with pytest.raises(TypeError):
+            m.std(axis=2)
+
+        with pytest.raises(TypeError):
+            m.std('2')
+
     def test_std(self):
         m = Matrix([[1, -2], [3, 4]])
         m_s0 = m.std(axis=0)
@@ -414,6 +455,14 @@ class TestInstanceMethods:
         assert row(0, 0) == pytest.approx(4.0)
         assert row(0, 2) == pytest.approx(6.0)
 
+    def test_get_col(self):
+        m = make_2x3()
+        col = m.get_col(0)
+        assert col.rows == 2
+        assert col.cols == 1
+        assert col(0, 0) == pytest.approx(1.0)
+        assert col(1, 0) == pytest.approx(4.0)
+
     def test_set(self):
         m = Matrix(2, 2)
         m.set(0, 1, 99.0)
@@ -425,6 +474,19 @@ class TestInstanceMethods:
         c.set(0, 0, 999.0)
         assert m(0, 0) == pytest.approx(1.0)  # original unchanged
 
+    def test_solve(self):
+        A = Matrix([[-1, -11, -3], [1, 1, 0], [2, 5, 1]])
+        b = Matrix([-37, -1, 10])
+        x = A.solve(b)
+        assert round(x[0, 0], 1) == -3.0 and round(x[1, 0], 1) == 2.0 and round(x[2, 0], 1) == 6.0
+
+    def test_argmax(self):
+        m = Matrix([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [1.0, 5.0, 4.0]])
+        assert m.argmax() == (1, 2)
+
+    def test_argmin(self):
+        m = Matrix([[1.0, 2.0, 3.0], [-1.0, 5.0, 6.0], [1.0, 5.0, 4.0]])
+        assert m.argmin() == (1, 0)
 
 # ===========================================================================
 # 5. Dunder — element access
@@ -501,6 +563,11 @@ class TestDunderAccess:
 
         assert a[0, 0] == 2.12978
         assert a[1, 0] == 2.14056
+
+    def test_contains(self):
+        m = Matrix([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        assert 2 in m
+        assert not (11 in m)
 
 # ===========================================================================
 # 6. Test Decomposition Methods
@@ -665,6 +732,18 @@ class TestArithmetic:
         c = a @ b
         c_np = np.array([[8, 8], [8, 8]])
         np.testing.assert_array_almost_equal(c.to_numpy(), c_np)
+
+    # --- Division ---
+
+    def test_true_division(self):
+        m = Matrix([1, 2])
+        m_2 = m / 2
+        assert m_2.rows == m.rows and m_2.cols == m.cols
+        assert m_2[0, 0] == 0.5 and m_2[1, 0] == 1
+
+        with pytest.raises(TypeError):
+            a = Matrix([1, 2])
+            m / a
 
     # --- Power ---
 

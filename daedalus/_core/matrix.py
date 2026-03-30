@@ -111,7 +111,21 @@ class Matrix:
     def is_vector(self) -> bool:
         """Returns whether or not Matrix is a vector. (rows == 1 or cols == 1)"""
         return (self.rows == 1 or self.cols == 1)
+    
+    @property
+    def is_symmetric(self) -> bool:
+        """Returns whether or not a Matrix is symetric (A == A.T)"""
+        return self == self.T
+    
+    @property
+    def is_orthogonal(self) -> bool:
+        """Returns whether or not a Matrix is orthogonal (A * A.T == I)"""
+        return (self * self.T) == Matrix.Identity(self.rows)
 
+    @property
+    def is_invertible(self) -> bool:
+        """Returns whether or not a Matrix is invertible (abs(det()) > 1e-12)"""
+        return abs(self.det()) > 1e-12
 
     # --------------------------------
     # Static Methods
@@ -128,6 +142,9 @@ class Matrix:
             distribution (str): 'uniform' or 'normal'.
             **kwargs: parameters for distribution (low, high for uniform; loc, scale for normal).
         """
+        if not HAS_NUMPY:
+            raise ImportError("Must have Numpy imported to run random.")
+
         if distribution == "uniform":
             low = kwargs.get('low', 0.0)
             high = kwargs.get('high', 1.0)
@@ -345,9 +362,30 @@ class Matrix:
         result._obj = self._obj.mean(axis)
         return result
 
+    def variance(self, axis: int) -> Matrix:
+        """
+        Find variance all the elements for the desired axis returning a 1 x n or n x 1 Matrix.
+
+        Args:
+            axis (int): Determines Which axis to find variance along (0 for Row, 1 for Col)
+
+        Raises:
+            TypeError is axis is not an int between 0,1.
+
+        Returns:
+            Matrix
+        """
+        if axis != 0 and axis != 1:
+            raise TypeError("Axis must be 0 or 1")
+        
+        result = Matrix(1, self.cols) if axis == 0 else Matrix(self.rows, 1)
+        result._obj = self._obj.variance(axis)
+        return result
+
+
     def std(self, axis: int) -> Matrix:
         """
-        Find stanrd deviation all the elements for the desired axis returning a 1 x n or n x 1 Matrix.
+        Find standard deviation all the elements for the desired axis returning a 1 x n or n x 1 Matrix.
 
         Args:
             axis (int): Determines Which axis to find std along (0 for Row, 1 for Col)
@@ -412,8 +450,14 @@ class Matrix:
 
     def get_row(self, idx: int) -> Matrix:
         """Returns a specific row as a new Matrix."""
-        res = Matrix(0, 0)
+        res = Matrix(1, self.cols)
         res._obj = self._obj.get_row(idx)
+        return res
+    
+    def get_col(self, idx: int):
+        """Returns a specific col as a new Matrix."""
+        res = Matrix(1, self.cols)
+        res._obj = self._obj.get_col(idx)
         return res
     
     def set(self, r: int, c: int, val: float) -> None:
@@ -425,6 +469,43 @@ class Matrix:
         res = Matrix(0, 0)
         res._obj = self._obj.copy()
         return res
+    
+    def solve(self, b: Matrix) -> Matrix:
+        """
+        Solves for x in the equation. Ax = b. by doing
+        x = A.inverse() * b
+
+        Args:
+            b (Matrix): The output Matrix.
+
+        Raises:
+            ValueError: If the current Matrix is not invertible.
+        
+        Returns:
+            The X Matrix.
+        """
+        if not self.is_invertible:
+            raise ValueError("The Current Matrix is not invertible.")
+
+        return self.inverse() * b
+    
+    def argmax(self) -> tuple[int, int]:
+        """
+        Finds the global argmax of the Matrix.
+
+        Returns:
+            A tuple with the index of (rows, cols)
+        """
+        return self._obj.argmax_global()
+
+    def argmin(self) -> tuple[int, int]:
+        """
+        Finds the global argmin of the Matrix.
+
+        Returns:
+            A tuple with the index of (rows, cols)
+        """
+        return self._obj.argmin_global()
 
     # -------------------------------- 
     # Decomposition Methods 
@@ -501,6 +582,9 @@ class Matrix:
         result = Matrix(self.rows, self.cols)
         result._obj = self._obj.round(places)
         return result
+    
+    def __contains__(self, value: int | float):
+        return self._obj.contains(value)
 
     # --- Basic Dunder Mathematical Operations ---
 
@@ -545,6 +629,9 @@ class Matrix:
         """Matrix multiplication or scalar multiplication."""
         res = Matrix(0, 0)
         if isinstance(other, Matrix):
+            if self.cols != other.rows:
+                raise ValueError("Matrix Rows must equal other Matrixs cols.")
+            
             if self.rows >= 1024 and other.cols >= 1024:
                 res._obj = self._obj.multiply_tiled(other._obj)
             else:
@@ -565,6 +652,13 @@ class Matrix:
 
     def __matmul__(self, other: Matrix | float) -> Matrix:
         return self.__mul__(other)
+
+    def __truediv__(self, other: float | int) -> Matrix:
+        if not (isinstance(other, float) or isinstance(other, int)):
+            raise TypeError("Div must be a scaler value.")
+        res = Matrix(self.rows, self.cols)
+        res._obj = self._obj / float(other)
+        return res
 
     def __pow__(self, power_value: int | float):
         self._obj = self._obj.power_to(power_value)
