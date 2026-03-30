@@ -455,6 +455,22 @@ class TestInstanceMethods:
         assert row(0, 0) == pytest.approx(4.0)
         assert row(0, 2) == pytest.approx(6.0)
 
+    def test_set_row(self):
+        m: Matrix = make_2x3()
+        new_row = [-1, -2, -3]
+        m.set_row(0, new_row)
+        row = m.get_row(0)
+        assert row[0, 0] == -1 and row[0, 1] == -2 and row[0, 2] == -3
+
+        with pytest.raises(ValueError):
+            m.set_row(3, [1, 2, 3])
+
+        with pytest.raises(ValueError):
+            m.set_row(0, [1, 2])
+
+        with pytest.raises(ValueError):
+            m.set_row(0, [1, 2, 3, 4])
+
     def test_get_col(self):
         m = make_2x3()
         col = m.get_col(0)
@@ -462,6 +478,22 @@ class TestInstanceMethods:
         assert col.cols == 1
         assert col(0, 0) == pytest.approx(1.0)
         assert col(1, 0) == pytest.approx(4.0)
+
+    def test_set_col(self):
+        m: Matrix = make_2x3()
+        new_col = [-1, -2]
+        m.set_col(0, new_col)
+        col = m.get_col(0)
+        assert col[0, 0] == -1 and col[1, 0] == -2
+
+        with pytest.raises(ValueError):
+            m.set_col(3, [1, 2])
+
+        with pytest.raises(ValueError):
+            m.set_col(0, [1])
+
+        with pytest.raises(ValueError):
+            m.set_col(0, [1, 2, 3])
 
     def test_set(self):
         m = Matrix(2, 2)

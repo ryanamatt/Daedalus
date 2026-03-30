@@ -453,6 +453,24 @@ class Matrix:
         res = Matrix(1, self.cols)
         res._obj = self._obj.get_row(idx)
         return res
+
+    def set_row(self, idx: int, new_row: list[int]) -> None:
+        """
+        Sets the row at the current index to the new_listed row.
+
+        Args:
+            idx (int): The index to overwrite the current row with.
+            new_row(list[int]) The new row.
+
+        Raises:
+            ValueError: When idx > self.rows and when len(new_row) != self.cols
+        """
+        if idx > self.rows - 1:
+            raise ValueError("Index must be lower than self.rows")
+        if len(new_row) != self.cols:
+            raise ValueError("len(new_row) must match self.cols")
+
+        self._obj.set_row(idx, new_row)
     
     def get_col(self, idx: int):
         """Returns a specific col as a new Matrix."""
@@ -460,6 +478,24 @@ class Matrix:
         res._obj = self._obj.get_col(idx)
         return res
     
+    def set_col(self, idx: int, new_col: list[int]) -> None:
+        """
+        Sets the col at the current index to the new_listed column.
+
+        Args:
+            idx (int): The index to overwrite the current col with.
+            new_col(list[int]) The new col.
+
+        Raises:
+            ValueError: When idx > self.cols - 1 and when len(new_col) != self.rows
+        """
+        if idx > self.cols - 1:
+            raise ValueError("Index must be lower than self.rows")
+        if len(new_col) != self.rows:
+            raise ValueError("len(new_col) must match self.rows")
+
+        self._obj.set_col(idx, new_col)
+
     def set(self, r: int, c: int, val: float) -> None:
         """Explicit setter used by tests."""
         self._obj.set(r, c, val)
