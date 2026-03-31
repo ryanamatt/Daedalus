@@ -1,5 +1,3 @@
-rank() 
-
 apply(lambda func)
 
 hstack(other)
@@ -165,8 +163,6 @@ cholesky(A):
 
     return L
     // Invariant: A == L * L^T
-
-__array__
 
 sqrt()
 log()

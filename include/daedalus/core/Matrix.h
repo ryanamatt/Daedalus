@@ -891,6 +891,10 @@ public:
         return inv;
     }
 
+    /**
+     * @brief Returs the trace of the Matrix. Sum of Diagonals.
+     * @return the Trace of the Matrix
+     */
     double trace() const {
         size_t diag_len = std::min({num_rows, num_cols});
         double trace_val = 0.0;
@@ -898,6 +902,20 @@ public:
             trace_val += data[i * (diag_len + 1)];
         }
         return trace_val;
+    }
+
+    /**
+     * @brief Finds the rank of the Matrix
+     * @returns Returns the Rank of the Matrix.
+     */
+    int rank() {
+        auto [U, sigma, V] = svd();
+        int count = 0;
+        int len = std::min(sigma.rows(), sigma.cols());
+        for (size_t i = 0; i < len; ++i) {
+            if (sigma(i, i) != 0.0) count++;
+        }
+        return count;
     }
 
     // --- Decomposition ---

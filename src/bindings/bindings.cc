@@ -184,6 +184,7 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def("det", &Matrix<double>::det)
         .def("inverse", &Matrix<double>::inverse)
         .def("trace", &Matrix<double>::trace)
+        .def("rank", &Matrix<double>::rank)
         .def("svd", [](const Matrix<double> &self) {
             auto [u, s, v] = self.svd();
             // Return as (U, Sigma, V)

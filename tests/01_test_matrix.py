@@ -427,6 +427,10 @@ class TestInstanceMethods:
         b = Matrix([[1, 2], [1, 2], [1, 2]])
         assert b.trace() == 3.0
 
+    def test_rank(self):
+        A = Matrix([[3, 2, 2], [2, 3, -2]])
+        assert A.rank() == 2
+
     def test_det(self):
         a = Matrix([[1, 2], [3, 4]])
         assert a.det() == -2.0
@@ -806,9 +810,19 @@ class TestArithmetic:
         b = -a
         np.testing.assert_array_almost_equal(b.to_numpy(), [[-1, 2], [-3, 4]])
 
+# ===========================================================================
+# 8. External Dunders
+# ===========================================================================
+
+class ExternalDunders:
+
+    def test_dunder_array(self):
+        m = Matrix([[3, 2, 2], [2, 3, -2]])
+        m_np = np.array(m)
+        assert m_np == np.array([[3, 2, 2], [2, 3, -2]])
 
 # ===========================================================================
-# 8. Comparison operators
+# 9. Comparison operators
 # ===========================================================================
 
 class TestComparisons:
@@ -892,7 +906,7 @@ class TestComparisons:
         assert (m != "not a matrix") is True
 
 # ===========================================================================
-# 9. Integration / round-trip tests
+# 10. Integration / round-trip tests
 # ===========================================================================
 
 class TestIntegration:

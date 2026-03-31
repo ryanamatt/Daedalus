@@ -434,6 +434,10 @@ class Matrix:
         """Returns a new Matrix that is the Trace of the current Matrix."""
         return self._obj.trace()
 
+    def rank(self) -> int:
+        """Retunrs the rank of Matrix. All non-zero singular values."""
+        return self._obj.rank()
+
     def det(self) -> float:
         """Returns the Determinant of a Matrix."""
         if self.rows != self.cols:
@@ -770,3 +774,11 @@ class Matrix:
         if not isinstance(other, Matrix):
             return True
         return self._obj != other._obj
+    
+    # --- External ---
+
+    def __array__(self, dtype=None, copy=None):
+        if not HAS_NUMPY:
+            raise ValueError("Must have NumPy imported.")
+
+        return np.array(self._obj, dtype=None, copy=copy)
