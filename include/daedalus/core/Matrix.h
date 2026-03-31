@@ -1024,6 +1024,26 @@ public:
     }
 
     /**
+     * @brief Finds the Moore-Penrose Pseudoinverse.
+     * @param tol The tolerance.
+     * @returns The Pseudoinverse Matrix
+     */
+    Matrix pinv(double tol = 1e-12) {
+        auto [U, Sigma, V] = this->svd(tol);
+    
+        // Create Sigma_plus by inverting non-zero entries
+        Matrix<T> SigmaPlus(this->cols(), this->rows()); 
+        for (size_t i = 0; i < std::min(this->rows(), this->cols()); ++i) {
+            if (Sigma(i, i) > tol) {
+                SigmaPlus(i, i) = 1.0 / Sigma(i, i);
+            }
+        }
+
+        // A+ = V * SigmaPlus * U.transpose()
+        return V * SigmaPlus * U.transpose();
+    }
+
+    /**
      * @brief Returs the trace of the Matrix. Sum of Diagonals.
      * @return the Trace of the Matrix
      */

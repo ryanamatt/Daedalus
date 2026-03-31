@@ -450,6 +450,13 @@ class TestInstanceMethods:
         c = Matrix([[1, 2], [3, 4], [5, 6]])
         with pytest.raises(ValueError):
             c.inverse()
+
+    def test_pinv(self):
+        a = Matrix([[1, 0, 1], [0, 1, 1]])
+        a_p = a.pinv()
+        a_p_np = np.array([[2/3, -1/3], [-1/3, 2/3], [1/3, 1/3]])
+        np.testing.assert_array_almost_equal(a_p.to_numpy(), a_p_np)
+        np.testing.assert_array_almost_equal(a.to_numpy(), (a * a_p * a).to_numpy())
  
     def test_get_row(self):
         m = make_2x3()
