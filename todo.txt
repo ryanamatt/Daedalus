@@ -105,37 +105,6 @@ qr_iteration(A, tol=1e-10, max_iter=1000):
 
 pinv() Moore-Penrose pseudoinverse - from svd() V * diag(1 / sigma) * U^T
 
-LU() decompositon:
-lu(A):
-    n = A.rows  // must be square
-    L = identity(n)
-    U = copy(A)
-    P = identity(n)  // permutation matrix (tracks row swaps)
-    sign = +1        // tracks determinant sign
-
-    for i in 0..n:
-        // --- Partial pivoting (find largest element in column i) ---
-        pivot_row = argmax(abs(U[i..n, i]))  // search from row i downward
-        if U[pivot_row, i] ≈ 0:
-            throw SingularMatrix
-
-        if pivot_row != i:
-            swap rows i and pivot_row in U
-            swap rows i and pivot_row in P
-            swap cols/rows i and pivot_row in L  // only the already-filled part
-            sign *= -1
-
-        // --- Eliminate entries below the diagonal in column i ---
-        for j in i+1..n:
-            factor = U[j, i] / U[i, i]   // <-- you discard this in det()
-            L[j, i] = factor              // <-- store it here instead
-            for k in i..n:
-                U[j, k] -= factor * U[i, k]
-            // U[j, i] is now 0 by construction
-
-    return P, L, U
-    // Invariant: P * A == L * U 
-
 sqrt()
 log()
 exp()

@@ -529,23 +529,50 @@ class Matrix:
 
         return self.inverse() * b
     
-    def argmax(self) -> tuple[int, int]:
+    def argmax(self, axis: int | None = None) -> Matrix | tuple[int, int]:
         """
-        Finds the global argmax of the Matrix.
+        Finds the global argmax of the Matrix. If axis is None than finds the global argmax. Axis is
+        either 0 or 1.
 
         Returns:
-            A tuple with the index of (rows, cols)
+            A Matrix of the indices if Argmax is 0 or 1.
+            A tuple with the index of (rows, cols) if axis is None.
         """
-        return self._obj.argmax_global()
+        if isinstance(axis, int):
+            if axis == 0 or axis == 1:
+                res = Matrix(0, 0)
+                res._obj = self._obj.argmax(axis)
+                return res
+            raise ValueError("Axis must be 0 or 1.")
+        
+        elif axis is None:
+            return self._obj.argmax_global()
+            
+        
+        else:
+            raise ValueError("Axis must be 0, 1, or None. If None Finds Global argmax.")
 
-    def argmin(self) -> tuple[int, int]:
+    def argmin(self, axis: int | None = None) -> tuple[int, int]:
         """
-        Finds the global argmin of the Matrix.
+        Finds the global argmin of the Matrix. If axis is None than finds the global argnmin. Axis is
+        either 0 or 1.
 
         Returns:
-            A tuple with the index of (rows, cols)
+            A Matrix of the indices if argmin is 0 or 1.
+            A tuple with the index of (rows, cols) if axis is None.
         """
-        return self._obj.argmin_global()
+        if isinstance(axis, int):
+            if axis == 0 or axis == 1:
+                res = Matrix(0, 0)
+                res._obj = self._obj.argmin(axis)
+                return res
+            raise ValueError("Axis must be 0 or 1.")
+        
+        elif axis is None:
+            return self._obj.argmin_global()
+        
+        else:
+            raise ValueError("Axis must be 0, 1, or None. If None Finds Global argmin.")
 
     # -------------------------------- 
     # Decomposition Methods 
@@ -588,6 +615,19 @@ class Matrix:
         res = Matrix(0, 0)
         res._obj = self._obj.cholesky()
         return res
+
+    def LU(self) -> tuple[Matrix, Matrix, Matrix]:
+        """
+        Computes the LU Decomposition. P * A = L * U
+
+        Returns tuple[P, L, U]
+        """
+        raw_P, raw_L, raw_U = self._obj.LU()
+        P, L, U = Matrix(0, 0), Matrix(0, 0), Matrix(0, 0)
+        P._obj = raw_P
+        L._obj = raw_L
+        U._obj = raw_U
+        return (P, L, U)
     
     # -------------------------------- 
     # Dunder Methods 

@@ -180,6 +180,8 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def("reshape", &Matrix<double>::reshape, py::arg("new_rows"), py::arg("new_cols"))
         .def("argmax_global", &Matrix<double>::argmax_global)
         .def("argmin_global", &Matrix<double>::argmin_global)
+        .def("argmax", &Matrix<double>::argmax, py::arg("axis"))
+        .def("argmin", &Matrix<double>::argmin, py::arg("axis"))
         .def("transpose", &Matrix<double>::transpose)
         .def("det", &Matrix<double>::det)
         .def("inverse", &Matrix<double>::inverse)
@@ -190,7 +192,11 @@ PYBIND11_MODULE(daedalus_cpp, m) {
             // Return as (U, Sigma, V)
             return py::make_tuple(u, s, v);}
         )
-        .def("cholesky", &Matrix<double>::cholesky);
+        .def("cholesky", &Matrix<double>::cholesky)
+        .def("LU", [](Matrix<double> &self) {
+            auto [P, L, U] = self.LU();
+            return py::make_tuple(P, L, U);}
+        );
 
     // --- DataFrame Bindings ---
     py::class_<DataFrame>(m, "DataFrame")

@@ -520,9 +520,27 @@ class TestInstanceMethods:
         m = Matrix([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [1.0, 5.0, 4.0]])
         assert m.argmax() == (1, 2)
 
+        np.testing.assert_array_almost_equal(m.argmax(0).to_numpy(), np.array([[1, 1, 1]]))
+        np.testing.assert_array_almost_equal(m.argmax(1).to_numpy(), np.array([[2], [2], [1]]))
+
+        with pytest.raises(ValueError):
+            m.argmax(axis=2)
+
+        with pytest.raises(ValueError):
+            m.argmax(axis="Hello")   
+
     def test_argmin(self):
         m = Matrix([[1.0, 2.0, 3.0], [-1.0, 5.0, 6.0], [1.0, 5.0, 4.0]])
         assert m.argmin() == (1, 0)
+
+        np.testing.assert_array_almost_equal(m.argmin(0).to_numpy(), np.array([[1, 0, 0]]))
+        np.testing.assert_array_almost_equal(m.argmin(1).to_numpy(), np.array([[0], [0], [0]]))
+
+        with pytest.raises(ValueError):
+            m.argmin(axis=2)
+
+        with pytest.raises(ValueError):
+            m.argmin(axis="Hello")  
 
 # ===========================================================================
 # 5. Dunder — element access
@@ -647,6 +665,18 @@ class TestDecomposition:
         D = Matrix([[1, 2], [2, 1]])
         with pytest.raises(ValueError):
             C.cholesky()
+
+    def test_LU(self):
+        A = Matrix([[0, 2, 1], [3, -1, 1], [1, 1, -2]])
+        P_act = Matrix([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
+        L_act = Matrix([[1, 0, 0], [0, 1, 0], [0.33, 0.67, 1]])
+        U_act = Matrix([[3, -1, 1], [0, 2, 1], [0, 0, -3]])
+
+        P, L, U = A.LU()
+        np.testing.assert_array_almost_equal(round(P, 2).to_numpy(), P_act.to_numpy())
+        np.testing.assert_array_almost_equal(round(L, 2).to_numpy(), L_act.to_numpy())
+        np.testing.assert_array_almost_equal(round(U, 2).to_numpy(), U_act.to_numpy())
+        np.testing.assert_array_almost_equal(round((P.inverse() * L * U), 2).to_numpy(), A.to_numpy())
 
 # ===========================================================================
 # 7. Arithmetic operators

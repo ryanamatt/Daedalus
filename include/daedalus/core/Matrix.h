@@ -790,6 +790,88 @@ public:
     }
 
     /**
+     * @brief Computes the indices of the maximum values along a specified axis.
+     * @param axis 0 to find indices down columns (result is 1 x cols), 
+     * 1 to find indices across rows (result is rows x 1).
+     * @return Matrix<int> containing the indices.
+     */
+    Matrix<double> argmax(int axis) const {
+        if (axis == 0) {
+            // Find max index in each column: Result is 1 x num_cols
+            Matrix<double> result(1, num_cols);
+            for (size_t j = 0; j < num_cols; ++j) {
+                int max_idx = 0;
+                T max_val = (*this)(0, j);
+                for (size_t i = 1; i < num_rows; ++i) {
+                    if ((*this)(i, j) > max_val) {
+                        max_val = (*this)(i, j);
+                        max_idx = static_cast<int>(i);
+                    }
+                }
+                result(0, j) = max_idx;
+            }
+            return result;
+        } 
+        else if (axis == 1) {
+            // Find max index in each row: Result is num_rows x 1
+            Matrix<double> result(num_rows, 1);
+            for (size_t i = 0; i < num_rows; ++i) {
+                int max_idx = 0;
+                T max_val = (*this)(i, 0);
+                for (size_t j = 1; j < num_cols; ++j) {
+                    if ((*this)(i, j) > max_val) {
+                        max_val = (*this)(i, j);
+                        max_idx = static_cast<int>(j);
+                    }
+                }
+                result(i, 0) = max_idx;
+            }
+            return result;
+        } 
+    }
+
+    /**
+     * @brief Computes the indices of the minimum values along a specified axis.
+     * @param axis 0 to find indices down columns (result is 1 x cols), 
+     * 1 to find indices across rows (result is rows x 1).
+     * @return Matrix<int> containing the indices.
+     */
+    Matrix<double> argmin(int axis) const {
+        if (axis == 0) {
+            // Find min index in each column: Result is 1 x num_cols 
+            Matrix<double> result(1, num_cols);
+            for (size_t j = 0; j < num_cols; ++j) {
+                int min_idx = 0;
+                T min_val = (*this)(0, j);
+                for (size_t i = 1; i < num_rows; ++i) {
+                    if ((*this)(i, j) < min_val) {
+                        min_val = (*this)(i, j);
+                        min_idx = static_cast<int>(i);
+                    }
+                }
+                result(0, j) = min_idx;
+            }
+            return result;
+        } 
+        else if (axis == 1) {
+            // Find min index in each row: Result is num_rows x 1 
+            Matrix<double> result(num_rows, 1);
+            for (size_t i = 0; i < num_rows; ++i) {
+                int min_idx = 0;
+                T min_val = (*this)(i, 0);
+                for (size_t j = 1; j < num_cols; ++j) {
+                    if ((*this)(i, j) < min_val) {
+                        min_val = (*this)(i, j);
+                        min_idx = static_cast<int>(j);
+                    }
+                }
+                result(i, 0) = min_idx;
+            }
+            return result;
+        } 
+    }
+
+    /**
      * @brief Computes the transpose of the matrix.
      * * Uses a blocked (tiled) approach to optimize L1/L2 cache hits, 
      * significantly improving performance for large matrices.
@@ -1050,6 +1132,55 @@ public:
         }
 
         return L;
+    }
+
+    /**
+     * @brief Does Partial Pivoting Matrix Decompositon. P * A = L * U
+     * @returns Tuple of P, U, 
+     */
+    std::tuple<Matrix<T>, Matrix<T>, Matrix<T>> LU() {
+        int n = num_rows;
+        Matrix<double> L = create_diagonal_scaler(n, n, 1.0);
+        Matrix<double> U = this->copy();
+        Matrix<double> P = create_diagonal_scaler(n, n, 1.0);
+        int sign = 1;
+
+        for (size_t i = 0; i < n; ++i) {
+            size_t pivot_row = i;
+            double max_val = std::abs(U(i, i));
+
+            for (size_t k = i + 1; k < n; ++k) {
+                if (std::abs(U(k, i)) > max_val) {
+                    max_val = std::abs(U(k, i));
+                    pivot_row = k;
+                }
+            }
+
+            if (std::abs(U(pivot_row, i)) < 1e-12) {
+                throw std::runtime_error("Matrix is singular.");
+            }
+
+            if (pivot_row != i) {
+                U.swap_rows(i, pivot_row);
+                P.swap_rows(i, pivot_row);
+
+                for (size_t col = 0; col < i; ++col) {
+                    std::swap(L(i, col), L(pivot_row, col));
+                }
+            }
+
+            for (size_t j = i + 1; j < n; ++j) {
+                double factor = U(j ,i) / U(i, i);
+                L(j, i) = factor;
+
+                for (size_t k = i; k < n; ++k) {
+                    U(j, k) -= factor * U(i, k);
+                }
+                U(j, i) = 0;
+            }
+        }
+
+        return {P, L, U};
     }
 
 };
