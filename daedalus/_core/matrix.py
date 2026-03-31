@@ -628,6 +628,18 @@ class Matrix:
         L._obj = raw_L
         U._obj = raw_U
         return (P, L, U)
+
+    def QR(self) -> tuple[Matrix, Matrix]:
+        """
+        Computes the QR Decomposition. A = Q * R
+
+        Returns tuple[Q, R]
+        """
+        raw_Q, raw_R = self._obj.QR()
+        Q, R = Matrix(0, 0), Matrix(0, 0)
+        Q._obj = raw_Q
+        R._obj = raw_R
+        return (Q, R)
     
     # -------------------------------- 
     # Dunder Methods 

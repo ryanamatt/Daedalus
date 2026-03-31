@@ -682,6 +682,15 @@ class TestDecomposition:
         np.testing.assert_array_almost_equal(round(U, 2).to_numpy(), U_act.to_numpy())
         np.testing.assert_array_almost_equal(round((P.inverse() * L * U), 2).to_numpy(), A.to_numpy())
 
+    def test_QR(self):
+        A = Matrix([[3, 1], [4, 2]])
+        Q, R = A.QR()
+        Q_np = np.array([[0.6, -0.8], [0.8, 0.6]])
+        R_np = np.array([[5, 2.2], [0, 0.4]])
+        np.testing.assert_almost_equal(Q.to_numpy(), Q_np)
+        np.testing.assert_almost_equal(R.to_numpy(), R_np)
+        np.testing.assert_array_almost_equal(A.to_numpy(), (Q * R).to_numpy())
+
 # ===========================================================================
 # 7. Arithmetic operators
 # ===========================================================================

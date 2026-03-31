@@ -196,6 +196,10 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def("LU", [](Matrix<double> &self) {
             auto [P, L, U] = self.LU();
             return py::make_tuple(P, L, U);}
+        )
+        .def("QR", [](Matrix<double> &self) {
+            auto [Q, R] = self.QR();
+            return py::make_tuple(Q, R);}
         );
 
     // --- DataFrame Bindings ---

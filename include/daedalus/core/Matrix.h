@@ -461,6 +461,15 @@ public:
         return result;
     }
 
+    /** @brief Matrix Element Wide Division */
+    Matrix operator/(const Matrix<T>& other) {
+        Matrix result = *this;
+        for (size_t i = 0; i < data.size(); ++i) {
+            data[i] / other.data[i];
+        }
+        return result;
+    }
+
     /**
      * @brief Takes each element in the Matrix and raises it to the power of the power_value
      * @param power_value The value of the power to raise each element to
@@ -1181,6 +1190,55 @@ public:
         }
 
         return {P, L, U};
+    }
+
+    /**
+     * @brief Finds the QR Decomposition.
+     * @return A tuple of Q and R Matrices
+     */
+    std::tuple<Matrix<T>, Matrix<T>> QR() {
+        size_t m = num_rows;
+        size_t n = num_cols;
+
+        Matrix<T> Q(m, n);
+        Matrix<T> R(n, n);
+
+        for (size_t j = 0; j < n; ++j) {
+            // Start with the j-th column of A
+            Matrix<T> v = this->get_col(j);
+
+            for (size_t i = 0; i < j; ++i) {
+                Matrix<T> q_i = Q.get_col(i);
+                
+                // Dot Product (q_i^T * v)
+                T dot_prod_val = 0;
+                for (size_t k = 0; k < m; ++k) {
+                    dot_prod_val += q_i(k, 0) * v(k, 0);
+                }
+                
+                R(i, j) = dot_prod_val;
+                
+                // Subtract projection: v = v - R(i, j) * q_i
+                for (size_t k = 0; k < m; ++k) {
+                    v(k, 0) -= R(i, j) * q_i(k, 0);
+                }
+            }
+
+            R(j, j) = v.norm();
+
+            if (std::abs(R(j, j)) > 1e-12) {
+                // Normalize and store in Q
+                for (size_t k = 0; k < m; ++k) {
+                    Q(k, j) = v(k, 0) / R(j, j);
+                }
+            } else {
+                // Handle linear dependency: set col to zero or handle accordingly
+                for (size_t k = 0; k < m; ++k) {
+                    Q(k, j) = 0;
+                }
+            }
+        }
+        return {Q, R};
     }
 
 };
