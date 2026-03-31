@@ -372,10 +372,10 @@ class TestInstanceMethods:
         assert m_s1[0, 0] == 2.25 and m_s1[1, 0] == 0.25
 
         with pytest.raises(TypeError):
-            m.std(axis=2)
+            m.variance(axis=2)
 
         with pytest.raises(TypeError):
-            m.std('2')
+            m.variance('2')
 
     def test_std(self):
         m = Matrix([[1, -2], [3, 4]])
@@ -515,6 +515,10 @@ class TestInstanceMethods:
         b = Matrix([-37, -1, 10])
         x = A.solve(b)
         assert round(x[0, 0], 1) == -3.0 and round(x[1, 0], 1) == 2.0 and round(x[2, 0], 1) == 6.0
+
+        d = Matrix([[1, 2], [1, 2]])
+        with pytest.raises(ValueError):
+            d.solve(b)
 
     def test_argmax(self):
         m = Matrix([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [1.0, 5.0, 4.0]])
@@ -820,6 +824,12 @@ class TestArithmetic:
         c_np = np.array([[8, 8], [8, 8]])
         np.testing.assert_array_almost_equal(c.to_numpy(), c_np)
 
+    def test_mul_errors(self):
+        a = make_2x3()
+        b = make_2x3()
+        with pytest.raises(ValueError):
+            a * b
+
     # --- Division ---
 
     def test_true_division(self):
@@ -868,6 +878,32 @@ class ExternalDunders:
         m = Matrix([[3, 2, 2], [2, 3, -2]])
         m_np = np.array(m)
         assert m_np == np.array([[3, 2, 2], [2, 3, -2]])
+
+    def test_array_no_numpy(monkeypatch):
+        import daedalus._core.matrix as matrix_module
+        monkeypatch.setattr(matrix_module, 'HAS_NUMPY', False)
+        m = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        with pytest.raises(ImportError, match="Must have NumPy imported."):
+            m.__array__()
+
+    def test_numpy_array_protocol_explicit(self):
+        import numpy as np
+        from daedalus import Matrix
+        
+        m = Matrix([[1, 2], [3, 4]])
+        
+        # 1. Trigger via explicit dunder call (Guaranteed coverage)
+        # This directly hits line 842 with the 'copy' variable assigned
+        arr_explicit = m.__array__(dtype=None, copy=True)
+        assert isinstance(arr_explicit, np.ndarray)
+        
+        # 2. Trigger via np.array with explicit copy flags
+        # This ensures the protocol works as intended for users
+        arr_copy = np.array(m, copy=True)
+        arr_no_copy = np.array(m, copy=False)
+        
+        assert arr_copy.shape == (2, 2)
+        assert np.all(arr_copy == arr_no_copy)
 
 # ===========================================================================
 # 9. Comparison operators

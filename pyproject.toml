@@ -37,3 +37,14 @@ markers = [
 
 [tool.coverage.run]
 omit = ["daedalus/daedalus_cpp.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "except ImportError:",
+    "HAS_NUMPY = False",
+    "if not HAS_NUMPY:",
+    "raise ImportError('Must have NumPy imported.')",
+    "return np.array\\(self._obj, dtype=None, copy=copy\\)",
+    "except:",
+    "__version__ = 'unknown'"
+]

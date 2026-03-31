@@ -837,6 +837,6 @@ class Matrix:
 
     def __array__(self, dtype=None, copy=None):
         if not HAS_NUMPY:
-            raise ValueError("Must have NumPy imported.")
-
-        return np.array(self._obj, dtype=None, copy=copy)
+            raise ImportError("Must have NumPy imported.")
+        
+        return np.array(self._obj, dtype=None, copy=copy) # pragma: no cover
