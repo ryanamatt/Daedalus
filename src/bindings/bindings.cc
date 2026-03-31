@@ -189,7 +189,8 @@ PYBIND11_MODULE(daedalus_cpp, m) {
             auto [u, s, v] = self.svd();
             // Return as (U, Sigma, V)
             return py::make_tuple(u, s, v);}
-        );
+        )
+        .def("cholesky", &Matrix<double>::cholesky);
 
     // --- DataFrame Bindings ---
     py::class_<DataFrame>(m, "DataFrame")

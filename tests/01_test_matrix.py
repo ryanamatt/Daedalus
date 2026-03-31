@@ -629,6 +629,24 @@ class TestDecomposition:
         A_reconstructed = round(U * sigma * V.T, 0)
         np.testing.assert_array_equal(A_reconstructed.to_numpy(), A.to_numpy())
 
+    def test_cholesky(self):
+        A = Matrix([[4, 12, -16], [12, 37, -43], [-16, -43, 98]])
+        L = Matrix([[2, 0, 0], [6, 1, 0], [-8, 5, 3]])
+        np.testing.assert_array_equal(A.cholesky().to_numpy(), L.to_numpy())
+        A_rec = L * L.T
+        np.testing.assert_array_equal(A_rec.to_numpy(), A.to_numpy())
+
+        B = Matrix(3, 2)
+        with pytest.raises(ValueError):
+            B.cholesky()
+
+        C = Matrix([[1, 2], [1, 2]])
+        with pytest.raises(ValueError):
+            C.cholesky()
+
+        D = Matrix([[1, 2], [2, 1]])
+        with pytest.raises(ValueError):
+            C.cholesky()
 
 # ===========================================================================
 # 7. Arithmetic operators

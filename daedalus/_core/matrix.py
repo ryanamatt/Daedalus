@@ -570,6 +570,24 @@ class Matrix:
         V._obj = v_raw
         
         return U, s, V
+
+    def cholesky(self) -> Matrix:
+        """
+        Computes the Cholesky Dcompositon. A = L * L.transpose()
+
+        Raises:
+            ValueError: If Matrix is not square or not symmetric
+        
+        Returns L
+        """
+        if not self.is_square:
+            raise ValueError("Matrix must be square for Cholesky Decomposition.")
+        if not self.is_symmetric:
+            raise ValueError("Matrix must be Symmetric for Cholesky Decomposition.")
+
+        res = Matrix(0, 0)
+        res._obj = self._obj.cholesky()
+        return res
     
     # -------------------------------- 
     # Dunder Methods 

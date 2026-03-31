@@ -1019,6 +1019,39 @@ public:
         return {sorted_U, sorted_sigma, sorted_V};
     }
 
+    /**
+     * @brief Does Cholesky Decompostion A = L * L.transpose()
+     * @return The L Matrix.
+     */
+    Matrix cholesky() {
+        int n = num_rows;
+        Matrix<double> L(n, n);
+
+        for (size_t i = 0; i < n; ++i) {
+            double sum = 0;
+            for (size_t k = 0; k < i; ++k) {
+                sum += std::pow(L(i, k), 2);
+            }
+
+            double val = (*this)(i, i) - sum;
+            if (val <= 0) {
+                throw std::logic_error("Not Positive Definite");
+            }
+
+            L(i, i) = std::sqrt(val);
+
+            for (size_t j = i + 1; j < n; ++j) {
+                sum = 0;
+                for (size_t k = 0; k < i; ++k) {
+                    sum += L(j, k) * L(i, k);
+                }
+                L(j, i) = ((*this)(j, i) - sum) / L(i, i);
+            }
+        }
+
+        return L;
+    }
+
 };
 
 #endif // MATRIX_H
