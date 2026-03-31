@@ -136,34 +136,6 @@ lu(A):
     return P, L, U
     // Invariant: P * A == L * U 
 
-cholesky()
-cholesky(A):
-    if not A.is_square: throw
-    if not A.is_symmetric: throw
-    n = A.rows
-    L = zeros(n, n)
-
-    for i in 0..n:
-        // --- Diagonal entry ---
-        sum = 0
-        for k in 0..i:
-            sum += L[i, k]^2
-        
-        val = A[i, i] - sum
-        if val <= 0:
-            throw NotPositiveDefinite  // this is the validity check
-        L[i, i] = sqrt(val)
-
-        // --- Off-diagonal entries in column i ---
-        for j in i+1..n:
-            sum = 0
-            for k in 0..i:
-                sum += L[j, k] * L[i, k]
-            L[j, i] = (A[j, i] - sum) / L[i, i]
-
-    return L
-    // Invariant: A == L * L^T
-
 sqrt()
 log()
 exp()
