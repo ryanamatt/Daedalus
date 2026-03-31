@@ -10,7 +10,3 @@ argmin(axis)
 argmax(axis)
 
 pinv() Moore-Penrose pseudoinverse - from svd() V * diag(1 / sigma) * U^T
-
-sqrt()
-log()
-exp()

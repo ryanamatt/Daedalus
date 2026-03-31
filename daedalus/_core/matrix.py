@@ -574,6 +574,39 @@ class Matrix:
         else:
             raise ValueError("Axis must be 0, 1, or None. If None Finds Global argmin.")
 
+    def log(self) -> Matrix:
+        """
+        Takes the natural log of all elements in the Matrix. 
+        
+        Returns 
+            A Matrix where all values are natural log of the other.
+        """
+        res = Matrix(0, 0)
+        res._obj = self._obj.log()
+        return res
+
+    def sqrt(self) -> Matrix:
+        """
+        Takes the square root of all elements in the Matrix. 
+        
+        Returns 
+            A Matrix where all values are square root of the other.
+        """
+        res = Matrix(0, 0)
+        res._obj = self._obj.sqrt()
+        return res
+
+    def exp(self) -> Matrix:
+        """
+        Takes the exp of all elements in the Matrix. 
+        
+        Returns 
+            A Matrix where all values are exp of the other.
+        """
+        res = Matrix(0, 0)
+        res._obj = self._obj.exp()
+        return res
+
     # -------------------------------- 
     # Decomposition Methods 
     # --------------------------------

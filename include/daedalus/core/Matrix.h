@@ -547,6 +547,47 @@ public:
         return !(*this == other);
     }
 
+    /**
+     * @brief Takes the natural log of all datapoints.
+     * @returns The Matrix with all elements taken the natural log of.
+     */
+    Matrix log() {
+        Matrix result(num_rows, num_cols);
+        std::transform(data.begin(), data.end(), result.data.begin(),
+            [](T x) { return std::log(x); } );
+        
+        return result;
+    }
+
+    /**
+     * @brief Takes the square root of all datapoints.
+     * @returns The Matrix with all elements taken the square root of.
+     */
+    Matrix sqrt() {
+        Matrix result(num_rows, num_cols);
+        std::transform(data.begin(), data.end(), result.data.begin(),
+            [](T x) { return std::sqrt(x); } );
+        
+        return result;
+    }
+
+    /**
+    * @brief Takes the exp of all datapoints.
+    * @returns The Matrix with all elements taken the exp of.
+    */
+    Matrix exp() {
+        Matrix result(num_rows, num_cols);
+        std::transform(data.begin(), data.end(), result.data.begin(),
+            [](T x) { return std::exp(x); } );
+        
+        return result;
+    }
+
+    /**
+     * @brief Rounds a Matrix to the desired places.
+     * @param places The number of places to round the Matrix,
+     * @returns The Matrix rounded the desired decimal places.
+     */
     Matrix round(int places) {
         Matrix result(num_rows, num_cols);
         std::transform(data.begin(), data.end(), result.data.begin(),

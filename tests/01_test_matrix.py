@@ -546,6 +546,36 @@ class TestInstanceMethods:
         with pytest.raises(ValueError):
             m.argmin(axis="Hello")  
 
+    def test_log(self):
+        m = Matrix([[1.0, 2], [3, 4]])
+        m_log = m.log()
+        assert m_log.shape == m.shape
+
+        m_log_rd = round(m_log, 2)
+        m_log_np = np.array([[0, 0.69], [1.10, 1.39]])
+        np.testing.assert_array_almost_equal(m_log_rd.to_numpy(), m_log_np)
+
+    def test_sqrt(self):
+        m = Matrix([[1, 2], [3, 64]])
+        m_sq = m.sqrt()
+        assert m_sq.shape == m.shape
+
+        m_sq_rd = round(m_sq, 2)
+        m_sq_np = np.array([[1, 1.41], [1.73, 8]])
+        np.testing.assert_array_almost_equal(m_sq_rd.to_numpy(), m_sq_np)
+
+    def test_exp(self):
+        m = Matrix([[1, 2], [3, 4]])
+        m_exp = m.exp()
+        assert m.shape == m_exp.shape
+
+        m_exp_rd = round(m_exp, 2)
+        m_exp_np = np.array([[2.72, 7.39], [20.09, 54.60]])
+        np.testing.assert_almost_equal(m_exp_rd.to_numpy(), m_exp_np)
+
+        m_re = m_exp.log()
+        np.testing.assert_almost_equal(m_re.to_numpy(), m.to_numpy())
+
 # ===========================================================================
 # 5. Dunder — element access
 # ===========================================================================
