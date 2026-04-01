@@ -141,6 +141,8 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def("get_col", &Matrix<double>::get_col, py::arg("idx"))
         .def("set_col", &Matrix<double>::set_col, py::arg("idx"), py::arg("new_col"))
         .def("copy", &Matrix<double>::copy)
+        .def("vstack", &Matrix<double>::vstack, py::arg("others"))
+        .def("hstack", &Matrix<double>::hstack, py::arg("others"))
         .def("__call__", [](Matrix<double> &self, size_t r, size_t c) { return self(r, c); }, 
              py::arg("r"), py::arg("c"))
         .def("set", [](Matrix<double> &self, size_t r, size_t c, double val) { self(r, c) = val; }, 

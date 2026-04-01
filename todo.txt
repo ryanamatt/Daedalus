@@ -1,4 +1,1 @@
 apply(lambda func)
-
-hstack(other)
-vstack(other)

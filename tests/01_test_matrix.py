@@ -517,6 +517,38 @@ class TestInstanceMethods:
         c.set(0, 0, 999.0)
         assert m(0, 0) == pytest.approx(1.0)  # original unchanged
 
+    def test_vstack(self):
+        m1 = Matrix([[1, 2]])
+        m2 = Matrix([[1, 2]])
+        m3 = Matrix([[1, 2]])
+        m12 = m1.vstack(m2)
+        m123 = m1.vstack([m2, m3])
+        
+        np.testing.assert_array_almost_equal(m12.to_numpy(), np.array([[1, 2], [1, 2]]))
+        np.testing.assert_array_almost_equal(m123.to_numpy(), np.array([[1, 2], [1, 2], [1,2]]))
+
+        with pytest.raises(ValueError):
+            m1.vstack(Matrix([[1, 2, 3]]))
+
+        with pytest.raises(ValueError):
+            m1.vstack("hello")
+
+    def test_hstack(self):
+        m1 = Matrix([[1, 2]])
+        m2 = Matrix([[1, 2]])
+        m3 = Matrix([[1, 2]])
+        m12 = m1.hstack(m2)
+        m123 = m1.hstack([m2, m3])
+        
+        np.testing.assert_array_almost_equal(m12.to_numpy(), np.array([[1, 2, 1, 2]]))
+        np.testing.assert_array_almost_equal(m123.to_numpy(), np.array([[1, 2, 1, 2, 1, 2]]))
+
+        with pytest.raises(ValueError):
+            m1.hstack(Matrix([[1, 2, 3], [1, 2 ,3]]))
+
+        with pytest.raises(ValueError):
+            m1.hstack("hello")
+
     def test_solve(self):
         A = Matrix([[-1, -11, -3], [1, 1, 0], [2, 5, 1]])
         b = Matrix([-37, -1, 10])

@@ -21,6 +21,7 @@ test = [
 ]
 
 [tool.scikit-build]
+sdist.include = ["include/**", "src/**", "CMakeLists.txt"]
 cmake.args = ["-DCMAKE_BUILD_TYPE=Release"]
 ninja.make-fallback = true
 build-dir = "build/{wheel_tag}"

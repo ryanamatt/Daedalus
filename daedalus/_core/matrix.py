@@ -524,6 +524,48 @@ class Matrix:
         res = Matrix(0, 0)
         res._obj = self._obj.copy()
         return res
+
+    def vstack(self, others: list[Matrix] | Matrix) -> Matrix:
+        """
+        Vertically appends multiple arrMatricesay onto each other.
+
+        Args:
+            others (list[Matrix] | Matrix): Takes a list of Matrices or a single Matrix.
+
+        Returns:
+            A new Matrix with the others appened to the new Matrix.
+        """
+        if isinstance(others, Matrix):
+            others = [others]
+
+        if isinstance(others, list):
+            obj_others = [other._obj for other in others]
+            res = Matrix(0, 0)
+            res._obj = self._obj.vstack(obj_others)
+            return res
+
+        raise ValueError("others parameter is a Matrix or list[Matrix].")
+    
+    def hstack(self, others: list[Matrix] | Matrix) -> Matrix:
+        """
+        Horizontally appends multiple Matrices onto each other.
+
+        Args:
+            others (list[Matrix] | Matrix): Takes a list of Matrices or a single Matrix.
+
+        Returns:
+            A new Matrix with the others appened to the new Matrix.
+        """
+        if isinstance(others, Matrix):
+            others = [others]
+
+        if isinstance(others, list):
+            obj_others = [other._obj for other in others]
+            res = Matrix(0, 0)
+            res._obj = self._obj.hstack(obj_others)
+            return res
+
+        raise ValueError("others parameter is a Matrix or list[Matrix].")
     
     def solve(self, b: Matrix) -> Matrix:
         """

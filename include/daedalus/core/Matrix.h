@@ -261,6 +261,71 @@ public:
         return result;
     }
 
+    /**
+     * @brief Vstacks stacks to Matrices vertically together. Assumes Col equal each other.
+     * @return newly Combined Matrix.
+     */
+    Matrix<T> vstack(const std::vector<Matrix<T>>& others) {
+        // Calculate total rows first to perform a single memory allocation
+        size_t total_rows = static_cast<size_t>(num_rows);
+        for (const auto& other : others) {
+            if (other.num_cols != num_cols) {
+                throw std::invalid_argument("Matrix column dimensions must match for vstack.");
+            }
+            total_rows += other.num_rows;
+        }
+
+        // Pre-allocate memory to avoid multiple reallocations during insertion
+        std::vector<T> result_data;
+        result_data.reserve(total_rows * num_cols);
+        
+        // Copy the base matrix data
+        result_data.insert(result_data.end(), data.begin(), data.end());
+
+        // Copy the data from the other matrices
+        for (const auto& other : others) {
+            result_data.insert(result_data.end(), other.data.begin(), other.data.end());
+        }
+
+        return Matrix<T>(static_cast<int>(total_rows), num_cols, std::move(result_data));
+    }
+
+    /**
+     * @brief Hstacks stacks to Matrices horizontally together. Assumes Rom equal each other.
+     * @return newly Combined Matrix.
+     */
+    Matrix<T> hstack(const std::vector<Matrix<T>>& others) {
+        int total_cols = num_cols;
+        
+        // Validate rows and calculate new width
+        for (const auto& other : others) {
+            if (other.num_rows != num_rows) {
+                throw std::invalid_argument("Matrix row dimensions must match for hstack.");
+            }
+            total_cols += other.num_cols;
+        }
+
+        // Pre-allocate the full size: (rows * total_cols)
+        std::vector<T> result_data;
+        result_data.reserve(num_rows * total_cols);
+
+        for (int r = 0; r < num_rows; ++r) {
+            // Add row 'r' from the current matrix
+            auto start = data.begin() + (r * num_cols);
+            auto end = start + num_cols;
+            result_data.insert(result_data.end(), start, end);
+
+            // Add row 'r' from each of the 'others'
+            for (const auto& other : others) {
+                auto o_start = other.data.begin() + (r * other.num_cols);
+                auto o_end = o_start + other.num_cols;
+                result_data.insert(result_data.end(), o_start, o_end);
+            }
+        }
+
+        return Matrix<T>(num_rows, total_cols, std::move(result_data));
+    }
+
     /** @brief Multiples an entire row by a scalar constant. */
     void scale_row(size_t row_idx, T scalar) {
         if (row_idx >= num_rows) throw std::out_of_range("Row index out of bounds.");
