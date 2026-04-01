@@ -812,6 +812,96 @@ public:
     }
 
     /**
+     * @brief Finds the Maximum element in each row/col
+     * @param axis Which Axis to find Maximum along.
+     * @return A Matrix that is 1xn or nx1 with all Maximum values along that axis.
+     */
+    Matrix max(int axis) {
+        if (axis == 0) {
+            Matrix<double> result(1, num_cols);
+            for (size_t j = 0; j < num_cols; ++j) {
+                T max_val = (*this)(0, j);
+                for (size_t i = 1; i < num_rows; ++i) {
+                    if ((*this)(i, j) > max_val) {
+                        max_val = (*this)(i, j);
+                    }
+                }
+                result(0, j) = max_val;
+            }
+            return result;
+        }
+
+        else if (axis == 1) {
+            Matrix<double> result(num_rows, 1);
+            for (size_t i = 0; i < num_rows; ++i) {
+                T max_val = (*this)(i, 0);
+                for (size_t j = 1; j < num_cols; ++j) {
+                    if ((*this)(i, j) > max_val) {
+                        max_val = (*this)(i, j);
+                    }
+                }
+                result(i, 0) = max_val;
+            }
+            return result;
+        }
+    }
+
+    /**
+     * @brief Finds the minimum element in each row/col
+     * @param axis Which Axis to find minimum along.
+     * @return A Matrix that is 1xn or nx1 with all minimum values along that axis.
+     */
+    Matrix min(int axis) {
+        if (axis == 0) {
+            Matrix<double> result(1, num_cols);
+            for (size_t j = 0; j < num_cols; ++j) {
+                T min_val = (*this)(0, j);
+                for (size_t i = 1; i < num_rows; ++i) {
+                    if ((*this)(i, j) < min_val) {
+                        min_val = (*this)(i, j);
+                    }
+                }
+                result(0, j) = min_val;
+            }
+            return result;
+        }
+
+        else if (axis == 1) {
+            Matrix<double> result(num_rows, 1);
+            for (size_t i = 0; i < num_rows; ++i) {
+                T min_val = (*this)(i, 0);
+                for (size_t j = 1; j < num_cols; ++j) {
+                    if ((*this)(i, j) < min_val) {
+                        min_val = (*this)(i, j);
+                    }
+                }
+                result(i, 0) = min_val;
+            }
+            return result;
+        }
+    }
+
+    /**
+     * @brief Finds the maximum value.
+     * @return The maximum value.
+     */
+    double max_global() {
+        auto max_val = *std::max_element(data.begin(), data.end());
+
+        return static_cast<double>(max_val);
+    }
+
+    /**
+     * @brief Finds the minimum value.
+     * @return The minimum value.
+     */
+    double min_global() {
+        auto min_val = *std::min_element(data.begin(), data.end());
+
+        return static_cast<double>(min_val);
+    }
+
+    /**
      * @brief Finds the index of the maximum value.
      * @return The index (row, col) of the maximum value.
      */

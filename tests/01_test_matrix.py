@@ -527,6 +527,32 @@ class TestInstanceMethods:
         with pytest.raises(ValueError):
             d.solve(b)
 
+    def test_max(self):
+        m = Matrix([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [1.0, 5.0, 4.0]])
+        assert m.max() == 6.0
+
+        np.testing.assert_array_almost_equal(m.max(0).to_numpy(), np.array([[4, 5, 6]]))
+        np.testing.assert_array_almost_equal(m.max(1).to_numpy(), np.array([[3], [6], [5]]))
+
+        with pytest.raises(ValueError):
+            m.max(axis=2)
+
+        with pytest.raises(ValueError):
+            m.max(axis="hello")
+
+    def test_mib(self):
+        m = Matrix([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [1.0, 5.0, 4.0]])
+        assert m.min() == 1.0
+
+        np.testing.assert_array_almost_equal(m.min(0).to_numpy(), np.array([[1, 2, 3]]))
+        np.testing.assert_array_almost_equal(m.min(1).to_numpy(), np.array([[1], [4], [1]]))
+
+        with pytest.raises(ValueError):
+            m.min(axis=2)
+
+        with pytest.raises(ValueError):
+            m.min(axis="hello")
+
     def test_argmax(self):
         m = Matrix([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [1.0, 5.0, 4.0]])
         assert m.argmax() == (1, 2)

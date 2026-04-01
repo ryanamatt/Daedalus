@@ -23,6 +23,7 @@ Makefile
 pycache/
 *.py[cod]
 $py.class
+*.pyi
 venv/
 .env
 .venv

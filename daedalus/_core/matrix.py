@@ -543,6 +543,50 @@ class Matrix:
             raise ValueError("The Current Matrix is not invertible.")
 
         return self.inverse() * b
+
+    def max(self, axis: int | None = None) -> Matrix | float:
+        """
+        Finds the max of the Matrix. If axis is None than finds the global max. Axis is
+        either 0 or 1.
+
+        Returns:
+            A Matrix of the indices if max is 0 or 1.
+            A float with the max element if axis is None.
+        """
+        if isinstance(axis, int):
+            if axis == 0 or axis == 1:
+                res = Matrix(0, 0)
+                res._obj = self._obj.max(axis)
+                return res
+            raise ValueError("Axis must be 0 or 1.")
+        
+        elif axis is None:
+            return self._obj.max_global()
+        
+        else:
+            raise ValueError("Axis must be 0, 1, or None. If None Finds Global Max.")
+
+    def min(self, axis: int | None = None) -> Matrix | float:
+        """
+        Finds the min of the Matrix. If axis is None than finds the global min. Axis is
+        either 0 or 1.
+
+        Returns:
+            A Matrix of the indices if min is 0 or 1.
+            A float with the min element if axis is None.
+        """
+        if isinstance(axis, int):
+            if axis == 0 or axis == 1:
+                res = Matrix(0, 0)
+                res._obj = self._obj.min(axis)
+                return res
+            raise ValueError("Axis must be 0 or 1.")
+        
+        elif axis is None:
+            return self._obj.min_global()
+        
+        else:
+            raise ValueError("Axis must be 0, 1, or None. If None Finds Global Min.")
     
     def argmax(self, axis: int | None = None) -> Matrix | tuple[int, int]:
         """
@@ -562,7 +606,6 @@ class Matrix:
         
         elif axis is None:
             return self._obj.argmax_global()
-            
         
         else:
             raise ValueError("Axis must be 0, 1, or None. If None Finds Global argmax.")

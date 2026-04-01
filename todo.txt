@@ -2,11 +2,3 @@ apply(lambda func)
 
 hstack(other)
 vstack(other)
-
-min(axis)
-max(axis)
-
-argmin(axis)
-argmax(axis)
-
-pinv() Moore-Penrose pseudoinverse - from svd() V * diag(1 / sigma) * U^T
