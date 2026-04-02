@@ -649,6 +649,19 @@ public:
     }
 
     /**
+     * @brief Applies a function to each element of the matrix.
+     * @param func A function that takes a T and returns a T.
+     * @return A new Matrix with the function applied.
+     */
+    Matrix<T> apply(std::function<T(T)> func) const {
+        Matrix<T> result(num_rows, num_cols);
+        for (size_t i = 0; i < data.size(); ++i) {
+            result.data[i] = func(data[i]);
+        }
+        return result;
+    }
+
+    /**
      * @brief Rounds a Matrix to the desired places.
      * @param places The number of places to round the Matrix,
      * @returns The Matrix rounded the desired decimal places.

@@ -706,6 +706,20 @@ class Matrix:
         res = Matrix(0, 0)
         res._obj = self._obj.exp()
         return res
+    
+    def apply(self, func: typing.Callable[[float], float]) -> Matrix:
+        """
+        Applies a function (like a lambda) to every element in the Matrix.
+        
+        Args:
+            func (Callable): A function that takes a float and returns a float.
+            
+        Returns:
+            Matrix: A new Matrix with the transformed values.
+        """
+        res = Matrix(0, 0)
+        res._obj = self._obj.apply(func)
+        return res
 
     # -------------------------------- 
     # Decomposition Methods 

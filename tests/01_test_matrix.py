@@ -641,6 +641,12 @@ class TestInstanceMethods:
         m_re = m_exp.log()
         np.testing.assert_almost_equal(m_re.to_numpy(), m.to_numpy())
 
+    def test_apply(self):
+        m = Matrix([[1.0, 2.0], [3.0, 4.0]])
+        m_a = m.apply(lambda x: x**3)
+        m_a_np = np.array([[1, 8], [27, 64]])
+        np.testing.assert_array_almost_equal(m_a.to_numpy(), m_a_np)
+
 # ===========================================================================
 # 5. Dunder — element access
 # ===========================================================================

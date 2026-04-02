@@ -3,6 +3,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/operators.h>
+#include <pybind11/functional.h>
 #include "daedalus/core/Matrix.h"
 #include "daedalus/core/Metrics.h"
 #include "daedalus/core/DataFrame.h"
@@ -173,6 +174,7 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def("log", &Matrix<double>::log)
         .def("sqrt", &Matrix<double>::sqrt)
         .def("exp", &Matrix<double>::exp)
+        .def("apply", &Matrix<double>::apply, py::arg("func"))
         .def("round", &Matrix<double>::round, py::arg("places"))
         .def("abs", &Matrix<double>::abs)
         .def("contains", &Matrix<double>::contains, py::arg("value"))
