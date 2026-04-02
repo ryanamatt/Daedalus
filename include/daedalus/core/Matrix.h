@@ -1470,6 +1470,40 @@ public:
         return {Q, R};
     }
 
+    /**
+     * @brief Finds the Eigenvalues of a Matrix
+     * @return a std::vector of the Eigen Values.
+     */
+    std::vector<double> eigen(int max_iterations, double tol = 1e-12) {
+        Matrix<T> current = this->copy();
+        int n = current.rows();
+
+        for (int iter = 0; iter < max_iterations; ++iter) {
+            auto [Q, R] = current.QR();
+
+            Matrix<T> next = R * Q;
+
+            float off_diagonal_sum = 0.0;
+            for (size_t i = 0; i < n - 1; ++i) {
+                for (size_t j = 0; j < i; ++j) {
+                    off_diagonal_sum += std::abs(next(i, j));
+                }
+            }
+
+            current = next;
+
+            if (off_diagonal_sum < tol) {
+                break;
+            }
+        }
+
+        std::vector<T> eigenvalues(n);
+        for (size_t i = 0; i < n; ++i) {
+            eigenvalues[i] = current(i, i);
+        }
+        return eigenvalues;
+    }
+
 };
 
 #endif // MATRIX_H

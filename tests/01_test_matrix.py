@@ -792,6 +792,16 @@ class TestDecomposition:
         np.testing.assert_almost_equal(R.to_numpy(), R_np)
         np.testing.assert_array_almost_equal(A.to_numpy(), (Q * R).to_numpy())
 
+    def test_eigen(self):
+        m = Matrix([[1, 4], [2, 3]])
+        vals = m.eigen()
+        actual = [5.0, -1.0]
+        assert vals == actual
+
+        with pytest.raises(ValueError):
+            m2 = Matrix([[1, 2, 3], [4, 5, 6]])
+            m2.eigen()
+        
 # ===========================================================================
 # 7. Arithmetic operators
 # ===========================================================================

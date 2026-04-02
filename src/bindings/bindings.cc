@@ -212,7 +212,8 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def("QR", [](Matrix<double> &self) {
             auto [Q, R] = self.QR();
             return py::make_tuple(Q, R);}
-        );
+        )
+        .def("eigen", &Matrix<double>::eigen, py::arg("max_iterations"), py::arg("tol"));
 
     // --- DataFrame Bindings ---
     py::class_<DataFrame>(m, "DataFrame")

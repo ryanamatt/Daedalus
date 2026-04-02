@@ -787,6 +787,25 @@ class Matrix:
         Q._obj = raw_Q
         R._obj = raw_R
         return (Q, R)
+
+    def eigen(self, max_iterations: int = 100, tol=1e-12) -> list[float]:
+        """
+        Finds the eigenvalues of the Matrix via iterative QR.
+
+        Args:
+            max_iterations (int): The number of iterations to run for the iterative QR process.
+            tol (float): The tolerance.
+
+        Raises:
+            ValueError: If not a square Matrix.
+
+        Returns:
+            A list[float] that is the eigenvalues.
+        """
+        if not self.is_square:
+            raise ValueError("Must be a square Matrix.")
+        
+        return self._obj.eigen(max_iterations, tol)
     
     # -------------------------------- 
     # Dunder Methods 
