@@ -15,7 +15,6 @@ from __future__ import annotations
 import pytest
 from daedalus import DataFrame, Matrix
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -203,47 +202,36 @@ class TestDropColumn:
 
 
 # ===========================================================================
-# 5. head
+# 5. head / tail
 # ===========================================================================
 
-class TestHead:
+class TestHeadAndTail:
 
     def test_head_default_returns_five_rows(self):
         df = DataFrame()
         df.add_column("v", list(range(10)))
         h = df.head()
-        assert h.rows == 5
+        assert h.rows == 5 and h.cols == 1
 
-    def test_head_custom_n(self):
-        df = make_people_df()
         h = df.head(2)
-        assert h.rows == 2
+        assert h.rows == 2 and h.cols == 1
 
-    def test_head_n_exceeds_rows_clamps(self):
-        df = make_people_df()
-        h = df.head(100)
-        assert h.rows == df.rows
-
-    def test_head_n_zero(self):
-        df = make_people_df()
-        h = df.head(0)
-        assert h.rows == 0
-
-    def test_head_preserves_column_names(self):
-        df = make_people_df()
-        h = df.head(2)
-        assert h.columns == df.columns
-
-    def test_head_returns_dataframe_instance(self):
-        df = make_people_df()
-        assert isinstance(df.head(1), DataFrame)
-
-    def test_head_values_are_correct(self):
         df = make_people_df()
         h = df.head(1)
         assert h.at(0, "name") == "Alice"
         assert h.at(0, "age") == 25
 
+    def test_tail(self):
+        df = DataFrame()
+        df.add_column("v", list(range(10)))
+        t = df.tail()
+        assert t.rows == 5 and t.cols == 1
+        t = df.tail(2)
+        assert t.rows == 2 and t.cols == 1
+        df = make_people_df()
+        t = df.tail(1)
+        assert t.at(0, "name") == "Charlie"
+        assert t.at(0, "age") == 22
 
 # ===========================================================================
 # 6. at

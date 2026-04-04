@@ -229,7 +229,8 @@ PYBIND11_MODULE(daedalus_cpp, m) {
         .def("at", py::overload_cast<size_t, size_t>(&DataFrame::at, py::const_), 
             py::arg("row"), py::arg("col"))
         .def("to_string", &DataFrame::to_string)
-        .def("head", &DataFrame::head, py::arg("n") = 5, "Returns the first n rows of the DataFrame.")
+        .def("head", &DataFrame::head, py::arg("n") = 5)
+        .def("tail", &DataFrame::tail, py::arg("n"))
         .def("add_column", &DataFrame::add_column, py::arg("name"), py::arg("col_data"))
         .def("drop_column", &DataFrame::drop_column, py::arg("name"))
         .def("filter", [](const DataFrame& self, const std::string& col_name, py::function predicate) {

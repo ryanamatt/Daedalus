@@ -126,12 +126,30 @@ public:
      */
     DataFrame head(size_t n = 5) const {
         DataFrame result;
-        size_t rows_to_copy = std::min(n, num_rows); // Ensure we don't exceed actual row count
+        size_t rows_to_copy = std::min(n, num_rows);
 
         for (const auto& name : column_names) {
             const auto& full_col = data.at(name);
             // Create a sub-vector containing only the first 'n' elements
             ColumnData head_col(full_col.begin(), full_col.begin() + rows_to_copy);
+            result.add_column(name, head_col);
+        }
+
+        return result;
+    }
+
+    /**
+     * @brief Creates a new DataFrame containing the last n rows.
+     * @param n The number of rows to retrieve (default is 5).
+     * @return A new DataFrame instance containing the subset of data.
+     */
+    DataFrame tail(size_t n = 5) const {
+        DataFrame result;
+        size_t rows_to_copy = std::min(n, num_rows);
+
+        for (const auto& name : column_names) {
+            const auto& full_col = data.at(name);
+            ColumnData head_col(full_col.rbegin(), full_col.rbegin() + rows_to_copy);
             result.add_column(name, head_col);
         }
 

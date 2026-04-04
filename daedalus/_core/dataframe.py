@@ -97,6 +97,18 @@ class DataFrame:
         """
         return DataFrame._from_cpp(self._obj.head(n))
     
+    def tail(self, n: int = 5) -> DataFrame:
+        """
+        Returns the last n rows as a new DataFrame.
+
+        Args:
+            n (int): Number of rows to return. Defaults to 5.
+
+        Returns:
+            A new DataFrame containing the last n rows.
+        """
+        return DataFrame._from_cpp(self._obj.tail(n))
+    
     def get_column_names(self) -> list[str]:
         """
         """
