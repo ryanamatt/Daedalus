@@ -2,7 +2,7 @@ from daedalus import Matrix, DataFrame, read_csv
 from daedalus.model_selection import train_test_split
 from daedalus.preprocessing import StandardScaler
 from daedalus.models import LinearRegression
-from daedalus.metrics import mean_squared_error
+from daedalus.metrics import mean_squared_error, r2_score
 
 # Load Data
 df: DataFrame = read_csv("boston_housing.csv")
@@ -37,4 +37,6 @@ model.fit(X_train, y_train, epochs=500)
 # Evaluate
 predictions: Matrix = model.predict(X_test)
 mse: float = mean_squared_error(y_test, predictions)
+r2: float = r2_score(y_test, predictions)
 print(f"Test MSE: {mse}")
+print("Test R^2:", r2)

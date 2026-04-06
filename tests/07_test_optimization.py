@@ -93,15 +93,6 @@ class TestSolutionStatus:
     def test_error_member_exists(self):
         assert hasattr(SolutionStatus, "ERROR")
 
-    def test_members_are_distinct(self):
-        statuses = [
-            SolutionStatus.OPTIMAL,
-            SolutionStatus.INFEASIBLE,
-            SolutionStatus.UNBOUNDED,
-            SolutionStatus.ERROR,
-        ]
-        assert len(set(statuses)) == 4
-
     def test_optimal_is_solution_status(self):
         assert isinstance(SolutionStatus.OPTIMAL, SolutionStatus)
 

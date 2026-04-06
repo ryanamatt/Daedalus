@@ -12,6 +12,15 @@ class SolutionStatus(Enum):
     UNBOUNDED = _SSCpp.UNBOUNDED
     ERROR = _SSCpp.ERROR
 
+    def __str__(self):
+        return str(self.name)
+    
+    def __eq__(self, other: str) -> bool:
+        return self.name == other
+    
+    def __ne__(self, other: str) -> bool:
+        return self.name != other
+
 @dataclass
 class OptimizationResult:
     x: Matrix
