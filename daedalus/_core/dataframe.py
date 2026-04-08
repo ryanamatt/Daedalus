@@ -85,6 +85,23 @@ class DataFrame:
     # Callable Functions
     # --------------------------------
 
+    def at(self, row: int, col: int | str) -> float | int | str:
+        """
+        Returns the value at a specific row and column.
+
+        Args:
+            row (int): The row index.
+            col (int | str): Column index or column name.
+
+        Returns:
+            The value at the given position (float, int, or str).
+
+        Raises:
+            IndexError: If row or column index is out of range.
+            KeyError: If col is a string and the column name does not exist.
+        """
+        return self._obj.at(row, col)
+
     def head(self, n: int = 5) -> DataFrame:
         """
         Returns the first n rows as a new DataFrame.
@@ -111,6 +128,10 @@ class DataFrame:
     
     def get_column_names(self) -> list[str]:
         """
+        This functions returns a list of the Column names.
+
+        Returns:
+            list[str] of the Column Names.
         """
         return self._obj.get_column_names()
 
@@ -198,61 +219,9 @@ class DataFrame:
         result._obj = self._obj.to_matrix(target_columns)
         return result
 
-    def at(self, row: int, col: int | str) -> float | int | str:
-        """
-        Returns the value at a specific row and column.
-
-        Args:
-            row (int): The row index.
-            col (int | str): Column index or column name.
-
-        Returns:
-            The value at the given position (float, int, or str).
-
-        Raises:
-            IndexError: If row or column index is out of range.
-            KeyError: If col is a string and the column name does not exist.
-        """
-        return self._obj.at(row, col)
-    
-
     # --------------------------------
-    # Dunder Methods
+    # Dunder Methods - Acess Functions
     # --------------------------------
-
-    def __repr__(self) -> str:
-        """Returns a formatted string representation of the DataFrame."""
-        return self._obj.to_string()
-
-    def __len__(self) -> int:
-        """Returns the number of rows in the DataFrame."""
-        return self.rows
-
-    def __bool__(self) -> bool:
-        """Returns True if the DataFrame contains at least one cell."""
-        return self.rows > 0 and self.cols > 0
-
-    def __contains__(self, col_name: str) -> bool:
-        """
-        Checks whether a column name exists in the DataFrame.
-
-        Example:
-            >>> "age" in df
-            True
-        """
-        return col_name in self.columns
-
-    def __iter__(self) -> typing.Iterator[dict[str, float | int | str]]:
-        """
-        Iterates over the rows of the DataFrame, yielding each as a dict.
-
-        Example:
-            >>> for row in df:
-            ...     print(row["age"])
-        """
-        col_names = self.columns
-        for r in range(self.rows):
-            yield {name: self._obj.at(r, name) for name in col_names}
 
     def __getitem__(self, col_name: str) -> list[float | int | str]:
         """
@@ -294,3 +263,43 @@ class DataFrame:
             self._obj.drop_column(col_name)
 
         self._obj.add_column(col_name, col_data)
+
+    # --------------------------------
+    # Dunder Methods - Other
+    # --------------------------------
+
+    def __repr__(self) -> str:
+        """Returns a formatted string representation of the DataFrame."""
+        return self._obj.to_string()
+
+    def __len__(self) -> int:
+        """Returns the number of rows in the DataFrame."""
+        return self.rows
+
+    def __bool__(self) -> bool:
+        """Returns True if the DataFrame contains at least one cell."""
+        return self.rows > 0 and self.cols > 0
+
+    def __contains__(self, col_name: str) -> bool:
+        """
+        Checks whether a column name exists in the DataFrame.
+
+        Example:
+            >>> "age" in df
+            True
+        """
+        return col_name in self.columns
+
+    def __iter__(self) -> typing.Iterator[dict[str, float | int | str]]:
+        """
+        Iterates over the rows of the DataFrame, yielding each as a dict.
+
+        Example:
+            >>> for row in df:
+            ...     print(row["age"])
+        """
+        col_names = self.columns
+        for r in range(self.rows):
+            yield {name: self._obj.at(r, name) for name in col_names}
+
+    
