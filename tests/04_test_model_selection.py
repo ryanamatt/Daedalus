@@ -1,10 +1,11 @@
 """
-test_model_selection.py
+04_test_model_selection.py
 ==============
-Full-coverage test suite for the Model Seleciton Python package (daedalus/model_selection/*).
+Full-coverage test suite for the Model Seleciton Python package 
+    (daedalus/model_selection/*).
 
 Run:
-    pytest tests/05_test_model_selection.py
+    pytest tests/04_test_model_selection.py
 
     or run all  tests by
     
@@ -12,7 +13,6 @@ Run:
 """
 
 from __future__ import annotations
-import pytest
 from daedalus import Matrix
 from daedalus.model_selection import train_test_split
 
@@ -51,7 +51,6 @@ class TestTrainTestSplit():
         assert len(y_tr) == 3
         assert len(y_ts) == 2
 
-class TestTrainTestSplitLogic:
     def test_shuffling_and_alignment(self):
         """Verifies data is shuffled and X/y pairs remain synchronized."""
         # Unique values to track rows: X and y values match for each row
@@ -74,7 +73,6 @@ class TestTrainTestSplitLogic:
         assert combined_y != [0.0, 1.0, 2.0, 3.0, 4.0]
 
     def test_reproducibility(self):
-        """Verifies that the same seed produces the same split."""
         X = Matrix([[i, i] for i in range(10)])
         y = Matrix([[i] for i in range(10)])
         

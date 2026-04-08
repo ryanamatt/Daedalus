@@ -1,5 +1,5 @@
 """
-test_io.py
+03_test_io.py
 =================
 Full-coverage test suite for the IO Python wrapper class (daedalus/_core/IO.py).
 
@@ -11,14 +11,12 @@ Run:
     pytest
 """
 
-
 from __future__ import annotations
 from unittest.mock import patch
 import pytest
 from daedalus import read_csv, DataFrame
 
 def test_read_csv():
-    """Test read_csv function"""
     df: DataFrame = read_csv('tests/test.csv')
 
     assert df.get_column_names() == ['Test1', 'Test2', 'Test3']
@@ -31,11 +29,9 @@ def test_read_csv():
             assert df.at(i, j) == count
             count += 1
 
-def test_file_not_found():
     with pytest.raises(FileNotFoundError):
         df: DataFrame = read_csv('fakeName.csv')
 
-def test_csv_runtime_error():
     with patch('daedalus._core.io.read_csv_cpp') as mock_cpp_read:
         mock_cpp_read.side_effect = Exception("C++ Internal Error")
 
