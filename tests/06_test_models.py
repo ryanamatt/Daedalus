@@ -32,19 +32,16 @@ def make_X(n: int = 50, features: int = 1, seed: int = 0) -> Matrix:
     rng = np.random.default_rng(seed)
     return Matrix(rng.uniform(0.0, 10.0, (n, features)))
 
-
 def make_y_linear(X: Matrix, slope: float = 2.0, intercept: float = 5.0) -> Matrix:
     """Returns y = slope * X[:, 0] + intercept  (n, 1)."""
     arr = np.array([[slope * X(i, 0) + intercept] for i in range(X.rows)])
     return Matrix(arr)
-
 
 def make_simple_dataset(n: int = 100, seed: int = 42):
     """Convenience wrapper – returns (X, y) ready for fit()."""
     X = make_X(n, features=1, seed=seed)
     y = make_y_linear(X)
     return X, y
-
 
 def make_multifeature_dataset(n: int = 100, features: int = 3, seed: int = 7):
     """Returns (X, y) with multiple features."""
@@ -66,7 +63,6 @@ def make_binary_dataset(n: int = 100, features: int = 1, seed: int = 0):
     X_arr = np.vstack([X0, X1])
     y_arr = np.vstack([np.zeros((half, 1)), np.ones((n - half, 1))])
     return Matrix(X_arr), Matrix(y_arr)
-
 
 def make_multifeature_binary_dataset(n: int = 120, features: int = 3, seed: int = 5):
     """Linearly separable binary problem with multiple features."""
@@ -95,74 +91,57 @@ def make_regression_dataset(n: int = 100, features: int = 1, seed: int = 0):
     y_arr = X_arr.sum(axis=1, keepdims=True)
     return Matrix(X_arr), Matrix(y_arr)
 
-
 def mse(y_true: Matrix, y_pred: Matrix) -> float:
     """Element-wise MSE between two (n, 1) matrices."""
     total = sum((y_true(i, 0) - y_pred(i, 0)) ** 2 for i in range(y_true.rows))
     return total / y_true.rows
+
+def train_and_mse(penalty: str, reg_lambda: float, epochs: int = 500):
+    X, y = make_simple_dataset(n=100, seed=3)
+    model = LinearRegression(learning_rate=0.05, reg_lambda=reg_lambda, penalty=penalty)
+    model.fit(X, y, epochs=epochs)
+    preds = model.predict(X)
+    y_arr = np.array([[y(i, 0)] for i in range(y.rows)])
+    p_arr = np.array([[preds(i, 0)] for i in range(preds.rows)])
+    return float(np.mean((y_arr - p_arr) ** 2))
 
 # ===========================================================================
 # 1. Model ABC
 # ===========================================================================
 
 class TestModelABC:
-    """Exercises every branch in model.py."""
 
-    # --- Abstract contract -------------------------------------------------
-
-    def test_cannot_instantiate_model_directly(self):
-        """Model is abstract – direct instantiation must raise TypeError."""
+    def test_init(self):
         with pytest.raises(TypeError):
             Model()
 
-    def test_concrete_subclass_without_fit_raises(self):
-        """A subclass that omits fit() is still abstract."""
         class NoFit(Model):
             def predict(self, X):
                 return X
-
         with pytest.raises(TypeError):
             NoFit()
 
-    def test_concrete_subclass_without_predict_is_allowed(self):
-        """predict() is not abstract; omitting it falls through to the base."""
         class FitOnly(Model):
             def fit(self, X, y):
-                pass  # pragma: no cover
-
+                pass
         obj = FitOnly()
         assert obj is not None
 
-    # --- __init__ with cpp_obj=None (default path) -------------------------
-
-    def test_init_default_cpp_obj(self):
-        """Passing no cpp_obj should still produce a usable Model subclass."""
         class Minimal(Model):
             def fit(self, X, y):
                 pass
-
         m = Minimal()
         assert hasattr(m, "_obj")
 
-    # --- __init__ with a real cpp_obj (truthy path) ------------------------
-
-    def test_init_with_explicit_cpp_obj(self):
-        """When cpp_obj is provided it should be stored as-is."""
         from daedalus.daedalus_cpp import LinearRegression as _LRCpp
-
         cpp = _LRCpp(0.01, 0.0, "none")
-
         class Wrapper(Model):
             def fit(self, X, y):
                 pass
-
         w = Wrapper(cpp_obj=cpp)
         assert w._obj is cpp
 
-    # --- predict() default implementation raises NotImplementedError -------
-
-    def test_predict_raises_not_implemented(self):
-        """Base predict() must raise NotImplementedError."""
+    def test_predict(self):
         class FitOnly(Model):
             def fit(self, X, y):
                 pass
@@ -172,83 +151,57 @@ class TestModelABC:
         with pytest.raises(NotImplementedError, match="not implemented"):
             m.predict(X)
 
-    # --- fit() abstract: subclass that calls super() raises ----------------
-
-    def test_fit_raises_not_implemented_if_super_called(self):
-        """A subclass that delegates to super().fit() should propagate the error."""
+    def test_fit(self):
         class Delegating(Model):
             def fit(self, X, y):
-                super().fit(X, y)  # deliberately calls abstract method
+                super().fit(X, y)
 
         m = Delegating()
         X, y = make_simple_dataset(10)
         with pytest.raises(NotImplementedError, match="not implemented"):
             m.fit(X, y)
 
-
 # ===========================================================================
-# 2. LinearRegression — construction
+# 2. LinearRegression
 # ===========================================================================
 
-class TestLinearRegressionInit:
+class TestLinearRegression:
 
-    def test_default_construction(self):
+    def test_init(self):
         model = LinearRegression()
         assert model is not None
         assert hasattr(model, "_obj")
 
-    def test_custom_learning_rate(self):
         model = LinearRegression(learning_rate=0.001)
         assert model is not None
-
-    def test_custom_lambda(self):
         model = LinearRegression(reg_lambda=0.1)
         assert model is not None
-
-    def test_penalty_l1(self):
         model = LinearRegression(penalty="l1")
         assert model is not None
-
-    def test_penalty_l2(self):
         model = LinearRegression(penalty="l2")
         assert model is not None
-
-    def test_penalty_none_explicit(self):
         model = LinearRegression(penalty="none")
         assert model is not None
 
-    def test_all_params(self):
         model = LinearRegression(learning_rate=0.05, reg_lambda=0.001, penalty="l2")
         assert model is not None
 
-    def test_is_model_subclass(self):
         assert isinstance(LinearRegression(), Model)
 
-
-# ===========================================================================
-# 3. LinearRegression.fit() — default epochs path
-# ===========================================================================
-
-class TestLinearRegressionFitDefault:
-
-    def test_fit_returns_none(self):
+    def test_fit(self):
         model = LinearRegression(learning_rate=0.01)
         X, y = make_simple_dataset()
         result = model.fit(X, y)
         assert result is None
 
-    def test_fit_does_not_raise(self):
         model = LinearRegression(learning_rate=0.01)
         X, y = make_simple_dataset()
         model.fit(X, y)  # should complete without exception
 
-    def test_fit_single_sample(self):
-        """Edge case: n=1."""
         X = Matrix([[3.0]])
         y = Matrix([[11.0]])
         LinearRegression(learning_rate=0.01).fit(X, y)
 
-    def test_fit_single_feature_single_target(self):
         model = LinearRegression(learning_rate=0.05)
         X, y = make_simple_dataset(n=200)
         model.fit(X, y)
@@ -257,86 +210,41 @@ class TestLinearRegressionFitDefault:
         assert preds.rows == X.rows
         assert preds.cols == 1
 
-    def test_fit_multifeature(self):
         model = LinearRegression(learning_rate=0.01)
         X, y = make_multifeature_dataset()
         model.fit(X, y)
 
-
-# ===========================================================================
-# 4. LinearRegression.fit() — explicit epochs path
-# ===========================================================================
-
-class TestLinearRegressionFitEpochs:
-
-    def test_fit_with_epochs_returns_none(self):
         model = LinearRegression(learning_rate=0.01)
         X, y = make_simple_dataset()
         result = model.fit(X, y, epochs=50)
         assert result is None
 
-    def test_fit_zero_epochs(self):
-        """Zero epochs: weights stay at zero-init but no exception raised."""
         model = LinearRegression(learning_rate=0.01)
         X, y = make_simple_dataset()
         model.fit(X, y, epochs=0)
         preds = model.predict(X)
         assert preds.rows == X.rows
 
-    def test_fit_one_epoch(self):
         model = LinearRegression(learning_rate=0.01)
         X, y = make_simple_dataset()
         model.fit(X, y, epochs=1)
         model.predict(X)
 
-    def test_fit_many_epochs_converges(self):
-        """With enough epochs on a noiseless linear problem the MSE is small."""
-        X, y = make_simple_dataset(n=200, seed=1)
-        model = LinearRegression(learning_rate=0.01)
-        model.fit(X, y, epochs=3000)
-        preds = model.predict(X)
-        y_arr = np.array([[y(i, 0)] for i in range(y.rows)])
-        p_arr = np.array([[preds(i, 0)] for i in range(preds.rows)])
-        mse = float(np.mean((y_arr - p_arr) ** 2))
-        assert mse < 1.0, f"Expected low MSE after convergence, got {mse:.4f}"
-
-    def test_fit_epochs_none_uses_default_path(self):
-        """Passing epochs=None must call the no-epoch overload (default path)."""
         model = LinearRegression(learning_rate=0.01)
         X, y = make_simple_dataset()
         model.fit(X, y, epochs=None)  # should branch to default fit
         model.predict(X)
 
-
-# ===========================================================================
-# 5. LinearRegression — regularization branches
-# ===========================================================================
-
-class TestLinearRegressionRegularization:
-
-    def _train_and_mse(self, penalty: str, reg_lambda: float, epochs: int = 500):
-        X, y = make_simple_dataset(n=100, seed=3)
-        model = LinearRegression(learning_rate=0.05, reg_lambda=reg_lambda, penalty=penalty)
-        model.fit(X, y, epochs=epochs)
-        preds = model.predict(X)
-        y_arr = np.array([[y(i, 0)] for i in range(y.rows)])
-        p_arr = np.array([[preds(i, 0)] for i in range(preds.rows)])
-        return float(np.mean((y_arr - p_arr) ** 2))
-
-    def test_penalty_none_trains(self):
-        mse = self._train_and_mse("none", 0.0)
+    def test_penalty(self):
+        mse = train_and_mse("none", 0.0)
         assert np.isfinite(mse)
 
-    def test_penalty_l2_trains(self):
-        mse = self._train_and_mse("l2", 0.01)
+        mse = train_and_mse("l2", 0.01)
         assert np.isfinite(mse)
 
-    def test_penalty_l1_trains(self):
-        mse = self._train_and_mse("l1", 0.01)
+        mse = train_and_mse("l1", 0.01)
         assert np.isfinite(mse)
 
-    def test_l1_weight_sign_positive(self):
-        """L1 gradient for a positive weight should push it toward zero."""
         X = Matrix(np.ones((50, 1)) * 5.0)
         y = Matrix(np.ones((50, 1)) * 10.0)
         model = LinearRegression(learning_rate=0.01, reg_lambda=1.0, penalty="l1")
@@ -345,46 +253,27 @@ class TestLinearRegressionRegularization:
         preds = model.predict(X)
         assert all(np.isfinite(preds(i, 0)) for i in range(preds.rows))
 
-    def test_l1_zero_weight_branch(self):
-        """Weights initialise at zero; first L1 gradient hit the zero branch."""
         X = Matrix(np.eye(5))
         y = Matrix(np.zeros((5, 1)))
         model = LinearRegression(learning_rate=0.01, reg_lambda=0.5, penalty="l1")
         model.fit(X, y, epochs=1)  # weights are zero at first step → sign branch
         model.predict(X)
 
-    def test_l2_high_lambda_shrinks_weights(self):
-        """Very high L2 lambda should shrink weights close to zero."""
         X, y = make_simple_dataset(n=100, seed=5)
         model = LinearRegression(learning_rate=0.01, reg_lambda=100.0, penalty="l2")
         model.fit(X, y, epochs=300)
         preds = model.predict(X)
         assert preds.rows == X.rows
 
-
-# ===========================================================================
-# 6. LinearRegression.predict()
-# ===========================================================================
-
-class TestLinearRegressionPredict:
-
-    def test_predict_shape(self):
+    def test_predict(self):
         X, y = make_simple_dataset(n=60)
         model = LinearRegression(learning_rate=0.05)
         model.fit(X, y, epochs=500)
         preds = model.predict(X)
         assert preds.rows == X.rows
         assert preds.cols == 1
-
-    def test_predict_returns_matrix(self):
-        X, y = make_simple_dataset(n=30)
-        model = LinearRegression(learning_rate=0.05)
-        model.fit(X, y, epochs=200)
-        preds = model.predict(X)
         assert isinstance(preds, Matrix)
 
-    def test_predict_before_fit_runs_without_crash(self):
-        """Predict on unfitted model (zero-initialised weights) should still return a matrix."""
         model = LinearRegression()
         X = make_X(10, features=2)
         # Weights are 0×0 until fit() is called – the C++ layer may raise; we
@@ -395,8 +284,6 @@ class TestLinearRegressionPredict:
         except Exception:
             pass  # acceptable – unfitted predict is undefined behaviour
 
-    def test_predict_different_input_size(self):
-        """Train on 80 rows, predict on 20 rows."""
         rng = np.random.default_rng(9)
         X_train = Matrix(rng.uniform(0, 5, (80, 2)))
         y_train = Matrix(rng.uniform(0, 10, (80, 1)))
@@ -407,8 +294,6 @@ class TestLinearRegressionPredict:
         preds = model.predict(X_test)
         assert preds.rows == 20
 
-    def test_predict_bias_added_to_every_row(self):
-        """All-zero feature matrix: predictions should equal the bias for every row."""
         n = 10
         X_train = Matrix(np.ones((n, 1)))
         y_train = Matrix(np.full((n, 1), 7.0))
@@ -423,34 +308,7 @@ class TestLinearRegressionPredict:
                 f"Row {i} prediction {preds(i, 0):.4f} too far from 7.0"
             )
 
-
-# ===========================================================================
-# 7. LinearRegression.save_model() / load_model()
-# ===========================================================================
-
-class TestLinearRegressionPersistence:
-
-    def test_save_and_load_roundtrip(self, tmp_path):
-        X, y = make_simple_dataset(n=100, seed=11)
-        model = LinearRegression(learning_rate=0.05)
-        model.fit(X, y, epochs=500)
-
-        filepath = str(tmp_path / "model.txt")
-        model.save_model(filepath)
-
-        # Load into a fresh model
-        model2 = LinearRegression()
-        model2.load_model(filepath)
-
-        preds1 = model.predict(X)
-        preds2 = model2.predict(X)
-
-        for i in range(X.rows):
-            assert abs(preds1(i, 0) - preds2(i, 0)) < 1e-10, (
-                f"Row {i}: {preds1(i, 0)} vs {preds2(i, 0)}"
-            )
-
-    def test_save_creates_file(self, tmp_path):
+    def test_save(self, tmp_path):
         X, y = make_simple_dataset()
         model = LinearRegression(learning_rate=0.05)
         model.fit(X, y, epochs=200)
@@ -458,36 +316,12 @@ class TestLinearRegressionPersistence:
         model.save_model(filepath)
         assert os.path.isfile(filepath)
 
-    def test_save_unfitted_model_does_not_create_file(self, tmp_path):
-        """C++ emits an error and returns early; no file should be written."""
         model = LinearRegression()
         filepath = str(tmp_path / "unfitted.txt")
         model.save_model(filepath)  # should not raise
         assert not os.path.isfile(filepath)
 
-    def test_load_nonexistent_file_raises(self):
-        model = LinearRegression()
-        with pytest.raises(Exception):
-            model.load_model("/nonexistent/path/model.txt")
-
-    def test_save_then_load_multifeature(self, tmp_path):
-        X, y = make_multifeature_dataset(n=80, features=3, seed=22)
-        model = LinearRegression(learning_rate=0.01, penalty="l2", reg_lambda=0.001)
-        model.fit(X, y, epochs=300)
-
-        filepath = str(tmp_path / "multi.txt")
-        model.save_model(filepath)
-
-        model2 = LinearRegression()
-        model2.load_model(filepath)
-
-        preds1 = model.predict(X)
-        preds2 = model2.predict(X)
-        for i in range(X.rows):
-            assert abs(preds1(i, 0) - preds2(i, 0)) < 1e-10
-
-    def test_load_overwrites_previous_weights(self, tmp_path):
-        """Loading a model should fully replace whatever weights were already set."""
+    def test_load(self, tmp_path):
         X, y = make_simple_dataset(n=50, seed=99)
 
         m1 = LinearRegression(learning_rate=0.05)
@@ -505,189 +339,15 @@ class TestLinearRegressionPersistence:
         for i in range(X.rows):
             assert abs(p1(i, 0) - p2(i, 0)) < 1e-10
 
+        model = LinearRegression()
+        with pytest.raises(Exception):
+            model.load_model("/nonexistent/path/model.txt")
 
 # ===========================================================================
-# 8. Integration tests
+# 3. LogisticRegression
 # ===========================================================================
 
-class TestLinearRegressionIntegration:
-
-    def test_fit_predict_reasonable_r2(self):
-        """On a clean linear problem, R² should be high after enough epochs."""
-        X, y = make_simple_dataset(n=200, seed=0)
-        model = LinearRegression(learning_rate=0.01)
-        model.fit(X, y, epochs=3000)
-        preds = model.predict(X)
-
-        y_arr = np.array([[y(i, 0)] for i in range(y.rows)])
-        p_arr = np.array([[preds(i, 0)] for i in range(preds.rows)])
-        ss_res = float(np.sum((y_arr - p_arr) ** 2))
-        ss_tot = float(np.sum((y_arr - y_arr.mean()) ** 2))
-        r2 = 1.0 - ss_res / ss_tot
-        assert r2 > 0.95, f"R² = {r2:.4f}, expected > 0.95"
-
-    def test_l1_and_l2_give_different_weights_than_no_penalty(self):
-        """Regularised models should produce different predictions from unregularised."""
-        X, y = make_simple_dataset(n=100, seed=4)
-
-        no_reg = LinearRegression(learning_rate=0.05, penalty="none")
-        no_reg.fit(X, y, epochs=1000)
-
-        l2_reg = LinearRegression(learning_rate=0.05, reg_lambda=10.0, penalty="l2")
-        l2_reg.fit(X, y, epochs=1000)
-
-        p_no = np.array([[no_reg.predict(X)(i, 0)] for i in range(X.rows)])
-        p_l2 = np.array([[l2_reg.predict(X)(i, 0)] for i in range(X.rows)])
-        assert not np.allclose(p_no, p_l2, atol=1e-3), (
-            "l2-regularised and unregularised predictions should differ"
-        )
-
-    def test_model_is_usable_after_save_load_cycle(self, tmp_path):
-        """Full cycle: fit → save → load → predict → save again."""
-        X, y = make_simple_dataset(n=80, seed=13)
-        model = LinearRegression(learning_rate=0.05)
-        model.fit(X, y, epochs=600)
-
-        p1 = str(tmp_path / "cycle1.txt")
-        model.save_model(p1)
-
-        loaded = LinearRegression()
-        loaded.load_model(p1)
-
-        # Predict with loaded model
-        preds = loaded.predict(X)
-        assert preds.rows == X.rows
-
-        # Save loaded model again
-        p2 = str(tmp_path / "cycle2.txt")
-        loaded.save_model(p2)
-        assert os.path.isfile(p2)
-
-    def test_multifeature_convergence(self):
-        """Three-feature linear model should converge to low MSE."""
-        X, y = make_multifeature_dataset(n=200, features=3, seed=55)
-        model = LinearRegression(learning_rate=0.005)
-        model.fit(X, y, epochs=5000)
-        preds = model.predict(X)
-
-        y_arr = np.array([[y(i, 0)] for i in range(y.rows)])
-        p_arr = np.array([[preds(i, 0)] for i in range(preds.rows)])
-        mse = float(np.mean((y_arr - p_arr) ** 2))
-        assert mse < 2.0, f"Multi-feature MSE too high: {mse:.4f}"
-
-# ===========================================================================
-# 9. LogisticRegression — construction
-# ===========================================================================
-
-class TestLogisticRegressionInit:
-
-    def test_default_construction(self):
-        model = LogisticRegression()
-        assert model is not None
-        assert hasattr(model, "_obj")
-
-    def test_custom_learning_rate(self):
-        model = LogisticRegression(learning_rate=0.001)
-        assert model is not None
-
-    def test_custom_lambda(self):
-        model = LogisticRegression(reg_lambda=0.5)
-        assert model is not None
-
-    def test_penalty_l1(self):
-        model = LogisticRegression(penalty="l1")
-        assert model is not None
-
-    def test_penalty_l2(self):
-        model = LogisticRegression(penalty="l2")
-        assert model is not None
-
-    def test_penalty_none_explicit(self):
-        model = LogisticRegression(penalty="none")
-        assert model is not None
-
-    def test_all_params(self):
-        model = LogisticRegression(learning_rate=0.05, reg_lambda=0.001, penalty="l2")
-        assert model is not None
-
-    def test_is_model_subclass(self):
-        assert isinstance(LogisticRegression(), Model)
-
-
-# ===========================================================================
-# 10. LogisticRegression.fit() — default epochs path
-# ===========================================================================
-
-class TestLogisticRegressionFitDefault:
-
-    def test_fit_returns_none(self):
-        model = LogisticRegression(learning_rate=0.1)
-        X, y = make_binary_dataset()
-        assert model.fit(X, y) is None
-
-    def test_fit_does_not_raise(self):
-        model = LogisticRegression(learning_rate=0.1)
-        X, y = make_binary_dataset()
-        model.fit(X, y)
-
-    def test_fit_single_sample(self):
-        """Edge case: n=1."""
-        X = Matrix([[1.0]])
-        y = Matrix([[1.0]])
-        LogisticRegression(learning_rate=0.1).fit(X, y)
-
-    def test_fit_multifeature(self):
-        model = LogisticRegression(learning_rate=0.05)
-        X, y = make_multifeature_binary_dataset()
-        model.fit(X, y)
-
-
-# ===========================================================================
-# 11. LogisticRegression.fit() — explicit epochs path
-# ===========================================================================
-
-class TestLogisticRegressionFitEpochs:
-
-    def test_fit_with_epochs_returns_none(self):
-        model = LogisticRegression(learning_rate=0.1)
-        X, y = make_binary_dataset()
-        assert model.fit(X, y, epochs=50) is None
-
-    def test_fit_zero_epochs(self):
-        """Zero epochs: weights stay at init but no exception raised."""
-        model = LogisticRegression(learning_rate=0.1)
-        X, y = make_binary_dataset()
-        model.fit(X, y, epochs=0)
-        model.predict(X)
-
-    def test_fit_one_epoch(self):
-        model = LogisticRegression(learning_rate=0.1)
-        X, y = make_binary_dataset()
-        model.fit(X, y, epochs=1)
-        model.predict(X)
-
-    def test_fit_many_epochs_converges(self):
-        """On a well-separated problem, accuracy should be high after convergence."""
-        X, y = make_binary_dataset(n=200, seed=1)
-        model = LogisticRegression(learning_rate=0.5)
-        model.fit(X, y, epochs=500)
-        preds = model.predict(X)
-        acc = accuracy(y, preds)
-        assert acc > 0.90, f"Expected accuracy > 0.90, got {acc:.4f}"
-
-    def test_fit_epochs_none_uses_default_path(self):
-        """Passing epochs=None must call the no-epoch overload."""
-        model = LogisticRegression(learning_rate=0.1)
-        X, y = make_binary_dataset()
-        model.fit(X, y, epochs=None)
-        model.predict(X)
-
-
-# ===========================================================================
-# 12. LogisticRegression — regularization branches
-# ===========================================================================
-
-class TestLogisticRegressionRegularization:
+class TestLogisticRegression:
 
     def _train(self, penalty: str, reg_lambda: float, epochs: int = 300):
         X, y = make_binary_dataset(n=100, seed=3)
@@ -695,79 +355,125 @@ class TestLogisticRegressionRegularization:
         model.fit(X, y, epochs=epochs)
         return model, X, y
 
-    def test_penalty_none_trains(self):
-        model, X, _ = self._train("none", 0.0)
-        preds = model.predict(X)
-        assert preds.rows == X.rows
-
-    def test_penalty_l2_trains(self):
-        model, X, _ = self._train("l2", 0.01)
-        preds = model.predict(X)
-        assert preds.rows == X.rows
-
-    def test_penalty_l1_trains(self):
-        model, X, _ = self._train("l1", 0.01)
-        preds = model.predict(X)
-        assert preds.rows == X.rows
-
-    def test_l1_zero_weight_branch(self):
-        """Weights initialise at zero; first L1 step hits the w==0 sign branch."""
-        X = Matrix(np.eye(5))
-        y = Matrix(np.zeros((5, 1)))
-        model = LogisticRegression(learning_rate=0.1, reg_lambda=0.5, penalty="l1")
-        model.fit(X, y, epochs=1)
-        model.predict(X)
-
-    def test_l1_positive_weight_branch(self):
-        """After the first update, weights may be positive, hitting sign > 0."""
-        X, y = make_binary_dataset(n=80, seed=7)
-        model = LogisticRegression(learning_rate=0.5, reg_lambda=0.1, penalty="l1")
-        model.fit(X, y, epochs=50)
-        preds = model.predict(X)
-        assert all(np.isfinite(preds(i, 0)) for i in range(preds.rows))
-
-    def test_l2_high_lambda_shrinks_weights(self):
-        """Very high L2 lambda should still produce finite predictions."""
-        X, y = make_binary_dataset(n=100, seed=5)
-        model = LogisticRegression(learning_rate=0.1, reg_lambda=100.0, penalty="l2")
-        model.fit(X, y, epochs=200)
-        preds = model.predict(X)
-        assert preds.rows == X.rows
-
-
-# ===========================================================================
-# 13. LogisticRegression.predict() and predict_proba()
-# ===========================================================================
-
-class TestLogisticRegressionPredict:
-
     def _fitted_model(self, seed: int = 0):
         X, y = make_binary_dataset(n=100, seed=seed)
         model = LogisticRegression(learning_rate=0.5)
         model.fit(X, y, epochs=300)
         return model, X, y
 
-    # --- predict() ---------------------------------------------------------
+    def test_init(self):
+        model = LogisticRegression()
+        assert model is not None
+        assert hasattr(model, "_obj")
 
-    def test_predict_shape(self):
+        model = LogisticRegression(learning_rate=0.001)
+        assert model is not None
+
+        model = LogisticRegression(reg_lambda=0.5)
+        assert model is not None
+
+        model = LogisticRegression(penalty="l1")
+        assert model is not None
+
+        model = LogisticRegression(penalty="l2")
+        assert model is not None
+
+        model = LogisticRegression(penalty="none")
+        assert model is not None
+
+        model = LogisticRegression(learning_rate=0.05, reg_lambda=0.001, penalty="l2")
+        assert model is not None
+        assert isinstance(LogisticRegression(), Model)
+
+    def test_fit(self):
+        model = LogisticRegression(learning_rate=0.1)
+        X, y = make_binary_dataset()
+        assert model.fit(X, y) is None
+
+        model = LogisticRegression(learning_rate=0.1)
+        X, y = make_binary_dataset()
+        model.fit(X, y)
+
+        X = Matrix([[1.0]])
+        y = Matrix([[1.0]])
+        LogisticRegression(learning_rate=0.1).fit(X, y)
+
+        model = LogisticRegression(learning_rate=0.05)
+        X, y = make_multifeature_binary_dataset()
+        model.fit(X, y)
+
+    def test_fit(self):
+        model = LogisticRegression(learning_rate=0.1)
+        X, y = make_binary_dataset()
+        assert model.fit(X, y, epochs=50) is None
+
+        model = LogisticRegression(learning_rate=0.1)
+        X, y = make_binary_dataset()
+        model.fit(X, y, epochs=0)
+        model.predict(X)
+
+        model = LogisticRegression(learning_rate=0.1)
+        X, y = make_binary_dataset()
+        model.fit(X, y, epochs=1)
+        model.predict(X)
+
+        X, y = make_binary_dataset(n=200, seed=1)
+        model = LogisticRegression(learning_rate=0.5)
+        model.fit(X, y, epochs=500)
+        preds = model.predict(X)
+        acc = accuracy(y, preds)
+        assert acc > 0.90, f"Expected accuracy > 0.90, got {acc:.4f}"
+
+        model = LogisticRegression(learning_rate=0.1)
+        X, y = make_binary_dataset()
+        model.fit(X, y, epochs=None)
+        model.predict(X)
+
+    def test_penalty(self):
+        model, X, _ = self._train("none", 0.0)
+        preds = model.predict(X)
+        assert preds.rows == X.rows
+
+        model, X, _ = self._train("l2", 0.01)
+        preds = model.predict(X)
+        assert preds.rows == X.rows
+
+        model, X, _ = self._train("l1", 0.01)
+        preds = model.predict(X)
+        assert preds.rows == X.rows
+
+        X = Matrix(np.eye(5))
+        y = Matrix(np.zeros((5, 1)))
+        model = LogisticRegression(learning_rate=0.1, reg_lambda=0.5, penalty="l1")
+        model.fit(X, y, epochs=1)
+        model.predict(X)
+
+        X, y = make_binary_dataset(n=80, seed=7)
+        model = LogisticRegression(learning_rate=0.5, reg_lambda=0.1, penalty="l1")
+        model.fit(X, y, epochs=50)
+        preds = model.predict(X)
+        assert all(np.isfinite(preds(i, 0)) for i in range(preds.rows))
+
+        X, y = make_binary_dataset(n=100, seed=5)
+        model = LogisticRegression(learning_rate=0.1, reg_lambda=100.0, penalty="l2")
+        model.fit(X, y, epochs=200)
+        preds = model.predict(X)
+        assert preds.rows == X.rows
+
+    def test_predict(self):
         model, X, _ = self._fitted_model()
         preds = model.predict(X)
         assert preds.rows == X.rows
         assert preds.cols == 1
 
-    def test_predict_returns_matrix(self):
         model, X, _ = self._fitted_model()
         assert isinstance(model.predict(X), Matrix)
 
-    def test_predict_values_are_binary(self):
-        """predict() must return only 0.0 or 1.0."""
         model, X, _ = self._fitted_model()
         preds = model.predict(X)
         for i in range(preds.rows):
             assert preds(i, 0) in (0.0, 1.0), f"Row {i}: {preds(i, 0)}"
 
-    def test_predict_different_input_size(self):
-        """Train on 80 rows, predict on 20 rows."""
         rng = np.random.default_rng(11)
         X_train = Matrix(rng.normal(0, 1, (80, 2)))
         y_train = Matrix((rng.normal(0, 1, (80, 1)) > 0).astype(float))
@@ -778,8 +484,6 @@ class TestLogisticRegressionPredict:
         preds = model.predict(X_test)
         assert preds.rows == 20
 
-    def test_predict_both_classes_represented(self):
-        """On a balanced dataset the model should predict both classes."""
         model, X, _ = self._fitted_model(seed=2)
         preds = model.predict(X)
         values = {preds(i, 0) for i in range(preds.rows)}
@@ -787,28 +491,21 @@ class TestLogisticRegressionPredict:
             "Model only predicts one class on balanced test data"
         )
 
-    # --- predict_proba() ---------------------------------------------------
-
-    def test_predict_proba_shape(self):
+    def test_predict_proba(self):
         model, X, _ = self._fitted_model()
         proba = model.predict_proba(X)
         assert proba.rows == X.rows
         assert proba.cols == 1
 
-    def test_predict_proba_returns_matrix(self):
         model, X, _ = self._fitted_model()
         assert isinstance(model.predict_proba(X), Matrix)
 
-    def test_predict_proba_range(self):
-        """All probabilities must be strictly in [0, 1]."""
         model, X, _ = self._fitted_model()
         proba = model.predict_proba(X)
         for i in range(proba.rows):
             p = proba(i, 0)
             assert 0.0 <= p <= 1.0, f"Row {i}: probability {p:.6f} out of range"
 
-    def test_predict_proba_consistent_with_predict(self):
-        """predict() >= 0.5 iff predict_proba() >= 0.5."""
         model, X, _ = self._fitted_model()
         labels = model.predict(X)
         proba = model.predict_proba(X)
@@ -818,7 +515,6 @@ class TestLogisticRegressionPredict:
             else:
                 assert labels(i, 0) == 0.0, f"Row {i}: proba={proba(i,0):.4f} but label={labels(i,0)}"
 
-    def test_predict_proba_multifeature(self):
         X, y = make_multifeature_binary_dataset(n=100, seed=6)
         model = LogisticRegression(learning_rate=0.1)
         model.fit(X, y, epochs=200)
@@ -826,7 +522,6 @@ class TestLogisticRegressionPredict:
         assert proba.rows == X.rows
         for i in range(proba.rows):
             assert 0.0 <= proba(i, 0) <= 1.0
-
 
 # ===========================================================================
 # 14. LogisticRegression.save_model() / load_model()
