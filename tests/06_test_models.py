@@ -523,29 +523,7 @@ class TestLogisticRegression:
         for i in range(proba.rows):
             assert 0.0 <= proba(i, 0) <= 1.0
 
-# ===========================================================================
-# 14. LogisticRegression.save_model() / load_model()
-# ===========================================================================
-
-class TestLogisticRegressionPersistence:
-
-    def test_save_and_load_roundtrip(self, tmp_path):
-        X, y = make_binary_dataset(n=100, seed=11)
-        model = LogisticRegression(learning_rate=0.5)
-        model.fit(X, y, epochs=300)
-
-        filepath = str(tmp_path / "logreg.txt")
-        model.save_model(filepath)
-
-        model2 = LogisticRegression()
-        model2.load_model(filepath)
-
-        p1 = model.predict(X)
-        p2 = model2.predict(X)
-        for i in range(X.rows):
-            assert p1(i, 0) == p2(i, 0), f"Row {i}: {p1(i,0)} vs {p2(i,0)}"
-
-    def test_save_creates_file(self, tmp_path):
+    def test_save_model(self, tmp_path):
         X, y = make_binary_dataset()
         model = LogisticRegression(learning_rate=0.5)
         model.fit(X, y, epochs=100)
@@ -553,36 +531,16 @@ class TestLogisticRegressionPersistence:
         model.save_model(filepath)
         assert os.path.isfile(filepath)
 
-    def test_save_unfitted_model_does_not_create_file(self, tmp_path):
-        """C++ returns early without creating a file when unfitted."""
         model = LogisticRegression()
         filepath = str(tmp_path / "unfitted.txt")
         model.save_model(filepath)
         assert not os.path.isfile(filepath)
 
-    def test_load_nonexistent_file_raises(self):
+    def test_load_model(self, tmp_path):
         model = LogisticRegression()
         with pytest.raises(Exception):
             model.load_model("/nonexistent/path/logreg.txt")
 
-    def test_save_then_load_multifeature(self, tmp_path):
-        X, y = make_multifeature_binary_dataset(n=100, features=3, seed=22)
-        model = LogisticRegression(learning_rate=0.1, penalty="l2", reg_lambda=0.001)
-        model.fit(X, y, epochs=200)
-
-        filepath = str(tmp_path / "multi_logreg.txt")
-        model.save_model(filepath)
-
-        model2 = LogisticRegression()
-        model2.load_model(filepath)
-
-        p1 = model.predict(X)
-        p2 = model2.predict(X)
-        for i in range(X.rows):
-            assert p1(i, 0) == p2(i, 0)
-
-    def test_load_overwrites_previous_weights(self, tmp_path):
-        """Loading should fully replace the model's current weights."""
         X, y = make_binary_dataset(n=80, seed=99)
 
         m1 = LogisticRegression(learning_rate=0.5)
@@ -599,8 +557,6 @@ class TestLogisticRegressionPersistence:
         for i in range(X.rows):
             assert p1(i, 0) == p2(i, 0)
 
-    def test_proba_roundtrip_after_load(self, tmp_path):
-        """predict_proba() results must be identical after a save/load cycle."""
         X, y = make_binary_dataset(n=60, seed=33)
         model = LogisticRegression(learning_rate=0.5)
         model.fit(X, y, epochs=200)
@@ -616,138 +572,11 @@ class TestLogisticRegressionPersistence:
         for i in range(X.rows):
             assert abs(pr1(i, 0) - pr2(i, 0)) < 1e-10
 
-
 # ===========================================================================
-# 15. LogisticRegression — integration
-# ===========================================================================
-
-class TestLogisticRegressionIntegration:
-
-    def test_high_accuracy_separable_data(self):
-        """Well-separated classes should yield high accuracy after training."""
-        X, y = make_binary_dataset(n=200, seed=0)
-        model = LogisticRegression(learning_rate=0.5)
-        model.fit(X, y, epochs=500)
-        acc = accuracy(y, model.predict(X))
-        assert acc > 0.95, f"Accuracy = {acc:.4f}, expected > 0.95"
-
-    def test_regularisation_reduces_confidence(self):
-        """Strong L2 regularisation should push probabilities toward 0.5."""
-        X, y = make_binary_dataset(n=100, seed=4)
-
-        no_reg = LogisticRegression(learning_rate=0.5, penalty="none")
-        no_reg.fit(X, y, epochs=500)
-
-        l2_reg = LogisticRegression(learning_rate=0.5, reg_lambda=50.0, penalty="l2")
-        l2_reg.fit(X, y, epochs=500)
-
-        pr_no = np.array([no_reg.predict_proba(X)(i, 0) for i in range(X.rows)])
-        pr_l2 = np.array([l2_reg.predict_proba(X)(i, 0) for i in range(X.rows)])
-
-        # L2-regularised probabilities should be closer to 0.5
-        assert np.mean(np.abs(pr_l2 - 0.5)) < np.mean(np.abs(pr_no - 0.5)), (
-            "Strong L2 regularisation should reduce prediction confidence"
-        )
-
-    def test_full_save_load_cycle(self, tmp_path):
-        """fit → save → load → predict → save again."""
-        X, y = make_binary_dataset(n=80, seed=13)
-        model = LogisticRegression(learning_rate=0.5)
-        model.fit(X, y, epochs=300)
-
-        p1 = str(tmp_path / "cycle1.txt")
-        model.save_model(p1)
-
-        loaded = LogisticRegression()
-        loaded.load_model(p1)
-        preds = loaded.predict(X)
-        assert preds.rows == X.rows
-
-        p2 = str(tmp_path / "cycle2.txt")
-        loaded.save_model(p2)
-        assert os.path.isfile(p2)
-
-    def test_multifeature_accuracy(self):
-        """Multi-feature logistic regression should learn a separable boundary."""
-        X, y = make_multifeature_binary_dataset(n=200, features=3, seed=55)
-        model = LogisticRegression(learning_rate=0.1)
-        model.fit(X, y, epochs=1000)
-        acc = accuracy(y, model.predict(X))
-        assert acc > 0.90, f"Multi-feature accuracy = {acc:.4f}, expected > 0.90"
-
-
-# ===========================================================================
-# 16. KNN — construction
+# 4. KNN
 # ===========================================================================
 
-class TestKNNInit:
-
-    def test_default_construction(self):
-        model = KNN()
-        assert model is not None
-        assert hasattr(model, "_obj")
-
-    def test_custom_k(self):
-        model = KNN(k=5)
-        assert model is not None
-
-    def test_k_equals_one(self):
-        model = KNN(k=1)
-        assert model is not None
-
-    def test_large_k(self):
-        model = KNN(k=50)
-        assert model is not None
-
-    def test_is_model_subclass(self):
-        assert isinstance(KNN(), Model)
-
-
-# ===========================================================================
-# 17. KNN.fit()
-# ===========================================================================
-
-class TestKNNFit:
-
-    def test_fit_returns_none(self):
-        model = KNN(k=3)
-        X, y = make_binary_dataset(n=30)
-        assert model.fit(X, y) is None
-
-    def test_fit_does_not_raise(self):
-        model = KNN(k=3)
-        X, y = make_binary_dataset(n=30)
-        model.fit(X, y)
-
-    def test_fit_stores_training_data(self):
-        """After fit, predict on the training set should run without error."""
-        model = KNN(k=3)
-        X, y = make_binary_dataset(n=20)
-        model.fit(X, y)
-        preds = model.predict(X)
-        assert preds.rows == X.rows
-
-    def test_fit_single_sample(self):
-        """Edge case: training set of size 1 with k=1."""
-        X = Matrix([[1.0, 2.0]])
-        y = Matrix([[0.0]])
-        model = KNN(k=1)
-        model.fit(X, y)
-        preds = model.predict(X)
-        assert preds.rows == 1
-
-    def test_fit_multifeature(self):
-        model = KNN(k=5)
-        X, y = make_multifeature_binary_dataset(n=60)
-        model.fit(X, y)
-        model.predict(X)
-
-
-# ===========================================================================
-# 18. KNN.predict()
-# ===========================================================================
-
-class TestKNNPredict:
+class TestKNN:
 
     def _fitted_model(self, k: int = 3, n: int = 60, seed: int = 0):
         X, y = make_binary_dataset(n=n, seed=seed)
@@ -755,25 +584,55 @@ class TestKNNPredict:
         model.fit(X, y)
         return model, X, y
 
-    def test_predict_shape(self):
+    def test_init(self):
+        model = KNN()
+        assert model is not None
+        assert hasattr(model, "_obj")
+
+        model = KNN(k=5)
+        assert model is not None
+
+        assert isinstance(KNN(), Model)
+
+    def test_fit(self):
+        model = KNN(k=3)
+        X, y = make_binary_dataset(n=30)
+        assert model.fit(X, y) is None
+
+        model = KNN(k=3)
+        X, y = make_binary_dataset(n=30)
+        model.fit(X, y)
+
+        model = KNN(k=3)
+        X, y = make_binary_dataset(n=20)
+        model.fit(X, y)
+        preds = model.predict(X)
+        assert preds.rows == X.rows
+
+        X = Matrix([[1.0, 2.0]])
+        y = Matrix([[0.0]])
+        model = KNN(k=1)
+        model.fit(X, y)
+        preds = model.predict(X)
+        assert preds.rows == 1
+
+        model = KNN(k=5)
+        X, y = make_multifeature_binary_dataset(n=60)
+        model.fit(X, y)
+        model.predict(X)
+
+    def test_predict(self):
         model, X, _ = self._fitted_model()
         preds = model.predict(X)
         assert preds.rows == X.rows
         assert preds.cols == 1
-
-    def test_predict_returns_matrix(self):
-        model, X, _ = self._fitted_model()
         assert isinstance(model.predict(X), Matrix)
 
-    def test_predict_values_are_class_labels(self):
-        """KNN returns majority-vote labels; must only contain training labels."""
         model, X, _ = self._fitted_model()
         preds = model.predict(X)
         for i in range(preds.rows):
             assert preds(i, 0) in (0.0, 1.0), f"Row {i}: {preds(i, 0)}"
 
-    def test_predict_on_training_data_k1_is_perfect(self):
-        """With k=1, every training point should map to its own label."""
         X, y = make_binary_dataset(n=40, seed=3)
         model = KNN(k=1)
         model.fit(X, y)
@@ -781,8 +640,6 @@ class TestKNNPredict:
         acc = accuracy(y, preds)
         assert acc == 1.0, f"k=1 train accuracy = {acc:.4f}, expected 1.0"
 
-    def test_predict_different_input_size(self):
-        """Train on 60, predict on 20."""
         rng = np.random.default_rng(8)
         X_train = Matrix(np.vstack([rng.normal(-2, 0.5, (30, 1)),
                                     rng.normal(+2, 0.5, (30, 1))]))
@@ -794,204 +651,67 @@ class TestKNNPredict:
         preds = model.predict(X_test)
         assert preds.rows == 20
 
-    def test_predict_both_classes_represented(self):
-        """On a balanced, separable dataset, both classes should appear."""
         model, X, _ = self._fitted_model(n=80, seed=10)
         preds = model.predict(X)
         values = {preds(i, 0) for i in range(preds.rows)}
         assert 0.0 in values and 1.0 in values
 
-    def test_predict_multifeature(self):
-        X, y = make_multifeature_binary_dataset(n=80, seed=9)
-        model = KNN(k=3)
-        model.fit(X, y)
-        preds = model.predict(X)
-        assert preds.rows == X.rows
-        for i in range(preds.rows):
-            assert preds(i, 0) in (0.0, 1.0)
-
-    def test_predict_tie_breaking_is_deterministic(self):
-        """Same inputs must always give same output (no randomness)."""
-        X, y = make_binary_dataset(n=40, seed=2)
-        model = KNN(k=2)   # even k may cause ties
-        model.fit(X, y)
-        p1 = model.predict(X)
-        p2 = model.predict(X)
-        for i in range(X.rows):
-            assert p1(i, 0) == p2(i, 0)
-
-
 # ===========================================================================
-# 19. KNN — integration
+# 5. NeuralNetwork
 # ===========================================================================
 
-class TestKNNIntegration:
+class TestNeuralNetwork:
 
-    def test_high_accuracy_separable_data(self):
-        """On well-separated classes k=3 should achieve high accuracy."""
-        X, y = make_binary_dataset(n=200, seed=0)
-        model = KNN(k=3)
-        model.fit(X, y)
-        acc = accuracy(y, model.predict(X))
-        assert acc > 0.95, f"KNN accuracy = {acc:.4f}, expected > 0.95"
+    def _build_and_fit(self, n: int = 60, features: int = 1,
+                       epochs: int = 100, lr: float = 0.01, seed: int = 0):
+        X, y = make_regression_dataset(n=n, features=features, seed=seed)
+        model = NeuralNetwork(learning_rate=lr)
+        model.add(features, 8)
+        model.add(8, 1)
+        model.fit(X, y, epochs=epochs)
+        return model, X, y
 
-    def test_larger_k_smooths_boundary(self):
-        """k=1 on train data is perfect; larger k should be slightly lower."""
-        X, y = make_binary_dataset(n=100, seed=5)
-        m1 = KNN(k=1)
-        m1.fit(X, y)
-        mk = KNN(k=15)
-        mk.fit(X, y)
-        acc1 = accuracy(y, m1.predict(X))
-        acck = accuracy(y, mk.predict(X))
-        # k=1 must be perfect on training data; k=15 may be lower
-        assert acc1 == 1.0
-        assert acck <= acc1
 
-    def test_refit_with_new_data(self):
-        """Calling fit() again should replace stored training data."""
-        rng = np.random.default_rng(20)
-        X1 = Matrix(rng.normal(-3, 0.3, (30, 1)))
-        y1 = Matrix(np.zeros((30, 1)))
-        X2 = Matrix(rng.normal(+3, 0.3, (30, 1)))
-        y2 = Matrix(np.ones((30, 1)))
-
-        model = KNN(k=1)
-        model.fit(X1, y1)
-        # After fitting only on class-0 data, all predictions should be 0
-        preds_before = model.predict(X1)
-        assert all(preds_before(i, 0) == 0.0 for i in range(preds_before.rows))
-
-        # Refit on class-1 data; predictions should now be 1
-        model.fit(X2, y2)
-        preds_after = model.predict(X2)
-        assert all(preds_after(i, 0) == 1.0 for i in range(preds_after.rows))
-
-    def test_multifeature_accuracy(self):
-        """Multi-feature KNN should learn a meaningful boundary."""
-        X, y = make_multifeature_binary_dataset(n=200, features=3, seed=55)
-        model = KNN(k=5)
-        model.fit(X, y)
-        acc = accuracy(y, model.predict(X))
-        assert acc > 0.90, f"KNN multi-feature accuracy = {acc:.4f}, expected > 0.90"
-
-    def test_k_equals_n_all_same_class_wins(self):
-        """k = n means every prediction is the majority class in training."""
-        X, y = make_binary_dataset(n=60, seed=1)   # balanced: 30 / 30
-        model = KNN(k=60)
-        model.fit(X, y)
-        preds = model.predict(X)
-        # With perfectly balanced classes either label is a valid majority winner
-        for i in range(preds.rows):
-            assert preds(i, 0) in (0.0, 1.0)
-
-# ===========================================================================
-# 20. NeuralNetwork — construction
-# ===========================================================================
-
-class TestNeuralNetworkInit:
-
-    def test_default_construction(self):
+    def test_init(self):
         model = NeuralNetwork()
         assert model is not None
-        assert hasattr(model, "_obj")
-
-    def test_custom_learning_rate(self):
         model = NeuralNetwork(learning_rate=0.001)
         assert model is not None
-
-    def test_high_learning_rate(self):
-        model = NeuralNetwork(learning_rate=1.0)
-        assert model is not None
-
-    def test_is_model_subclass(self):
         assert isinstance(NeuralNetwork(), Model)
 
-
-# ===========================================================================
-# 21. NeuralNetwork.add()
-# ===========================================================================
-
-class TestNeuralNetworkAdd:
-
-    def test_add_single_layer_does_not_raise(self):
-        model = NeuralNetwork()
-        model.add(2, 1)
-
-    def test_add_multiple_layers_does_not_raise(self):
+    def test_add(self):
         model = NeuralNetwork()
         model.add(4, 8)
         model.add(8, 4)
-        model.add(4, 1)
+        assert model.add(4, 1) is None
 
-    def test_add_returns_none(self):
-        model = NeuralNetwork()
-        result = model.add(2, 1)
-        assert result is None
-
-    def test_add_wide_layer(self):
-        """Large layer widths should construct without error."""
         model = NeuralNetwork()
         model.add(64, 128)
         model.add(128, 1)
 
-    def test_add_single_neuron_layers(self):
-        """Degenerate 1→1 layers should be accepted."""
         model = NeuralNetwork()
         model.add(1, 1)
         model.add(1, 1)
 
-
-# ===========================================================================
-# 22. NeuralNetwork.fit() — default epochs path
-# ===========================================================================
-
-class TestNeuralNetworkFitDefault:
-
-    def test_fit_returns_none(self):
+    def test_fit(self):
         model = NeuralNetwork(learning_rate=0.01)
         model.add(1, 4)
         model.add(4, 1)
         X, y = make_regression_dataset(n=20)
         assert model.fit(X, y) is None
 
-    def test_fit_does_not_raise(self):
         model = NeuralNetwork(learning_rate=0.01)
         model.add(1, 4)
         model.add(4, 1)
         X, y = make_regression_dataset(n=30)
         model.fit(X, y)
 
-    def test_fit_single_layer_network(self):
-        model = NeuralNetwork(learning_rate=0.01)
-        model.add(2, 1)
-        X, y = make_regression_dataset(n=20, features=2)
-        model.fit(X, y)
-
-    def test_fit_single_sample(self):
-        """Edge case: batch size of 1."""
-        model = NeuralNetwork(learning_rate=0.01)
-        model.add(1, 1)
-        X = Matrix([[0.5]])
-        y = Matrix([[0.5]])
-        model.fit(X, y)
-
-
-# ===========================================================================
-# 23. NeuralNetwork.fit() — explicit epochs path
-# ===========================================================================
-
-class TestNeuralNetworkFitEpochs:
-
-    def test_fit_with_epochs_returns_none(self):
         model = NeuralNetwork(learning_rate=0.01)
         model.add(1, 4)
         model.add(4, 1)
         X, y = make_regression_dataset(n=20)
         assert model.fit(X, y, epochs=10) is None
 
-    def test_fit_zero_epochs(self):
-        """Zero epochs: weights stay at init values, no exception raised."""
         model = NeuralNetwork(learning_rate=0.01)
         model.add(1, 4)
         model.add(4, 1)
@@ -999,25 +719,6 @@ class TestNeuralNetworkFitEpochs:
         model.fit(X, y, epochs=0)
         model.predict(X)
 
-    def test_fit_one_epoch(self):
-        model = NeuralNetwork(learning_rate=0.01)
-        model.add(1, 4)
-        model.add(4, 1)
-        X, y = make_regression_dataset(n=20)
-        model.fit(X, y, epochs=1)
-        model.predict(X)
-
-    def test_fit_epochs_none_uses_default_path(self):
-        """Passing epochs=None must invoke the no-epoch (default) overload."""
-        model = NeuralNetwork(learning_rate=0.01)
-        model.add(1, 4)
-        model.add(4, 1)
-        X, y = make_regression_dataset(n=20)
-        model.fit(X, y, epochs=None)
-        model.predict(X)
-
-    def test_fit_many_epochs_reduces_loss(self):
-        """Loss after many epochs should be lower than after zero epochs."""
         X, y = make_regression_dataset(n=80, seed=1)
 
         # Untrained baseline
@@ -1038,8 +739,6 @@ class TestNeuralNetworkFitEpochs:
             f"Expected training to reduce loss: {loss_before:.4f} → {loss_after:.4f}"
         )
 
-    def test_fit_deep_network(self):
-        """Three hidden layers should train without error."""
         model = NeuralNetwork(learning_rate=0.01)
         model.add(2, 8)
         model.add(8, 8)
@@ -1049,40 +748,18 @@ class TestNeuralNetworkFitEpochs:
         model.fit(X, y, epochs=50)
         model.predict(X)
 
-
-# ===========================================================================
-# 24. NeuralNetwork.predict()
-# ===========================================================================
-
-class TestNeuralNetworkPredict:
-
-    def _build_and_fit(self, n: int = 60, features: int = 1,
-                       epochs: int = 100, lr: float = 0.01, seed: int = 0):
-        X, y = make_regression_dataset(n=n, features=features, seed=seed)
-        model = NeuralNetwork(learning_rate=lr)
-        model.add(features, 8)
-        model.add(8, 1)
-        model.fit(X, y, epochs=epochs)
-        return model, X, y
-
-    def test_predict_shape(self):
+    def test_predict(self):
         model, X, y = self._build_and_fit()
         preds = model.predict(X)
         assert preds.rows == X.rows
         assert preds.cols == 1
-
-    def test_predict_returns_matrix(self):
-        model, X, _ = self._build_and_fit()
         assert isinstance(model.predict(X), Matrix)
 
-    def test_predict_values_are_finite(self):
         model, X, _ = self._build_and_fit()
         preds = model.predict(X)
         for i in range(preds.rows):
             assert np.isfinite(preds(i, 0)), f"Row {i} is not finite: {preds(i, 0)}"
 
-    def test_predict_different_input_size(self):
-        """Train on 80 rows, predict on 20 rows."""
         X_train, y_train = make_regression_dataset(n=80, seed=3)
         X_test, _ = make_regression_dataset(n=20, seed=4)
         model = NeuralNetwork(learning_rate=0.01)
@@ -1092,28 +769,12 @@ class TestNeuralNetworkPredict:
         preds = model.predict(X_test)
         assert preds.rows == 20
 
-    def test_predict_single_sample(self):
-        model, X, _ = self._build_and_fit(n=40)
-        single = Matrix([[X(0, 0)]])
-        preds = model.predict(single)
-        assert preds.rows == 1
-        assert preds.cols == 1
-
-    def test_predict_multifeature(self):
-        model, X, _ = self._build_and_fit(features=3, n=60)
-        preds = model.predict(X)
-        assert preds.rows == X.rows
-
-    def test_predict_is_deterministic(self):
-        """Same input must always yield the same output."""
         model, X, _ = self._build_and_fit()
         p1 = model.predict(X)
         p2 = model.predict(X)
         for i in range(X.rows):
             assert p1(i, 0) == p2(i, 0), f"Row {i} differs between calls"
 
-    def test_predict_no_layers_forward_pass_is_identity(self):
-        """A network with no layers added should return the input unchanged."""
         model = NeuralNetwork(learning_rate=0.01)
         # No layers added — predict is a no-op forward pass
         X, _ = make_regression_dataset(n=5)
@@ -1121,54 +782,3 @@ class TestNeuralNetworkPredict:
         assert preds.rows == X.rows
         for i in range(X.rows):
             assert abs(preds(i, 0) - X(i, 0)) < 1e-12
-
-
-# ===========================================================================
-# 25. NeuralNetwork — integration
-# ===========================================================================
-
-class TestNeuralNetworkIntegration:
-
-    def test_convergence_single_feature(self):
-        """Single-feature regression should converge to low MSE."""
-        X, y = make_regression_dataset(n=200, features=1, seed=0)
-        model = NeuralNetwork(learning_rate=0.05)
-        model.add(1, 16)
-        model.add(16, 1)
-        model.fit(X, y, epochs=1000)
-        loss = mse(y, model.predict(X))
-        assert loss < 0.05, f"Final MSE = {loss:.4f}, expected < 0.05"
-
-    def test_convergence_multifeature(self):
-        """Three-feature regression should converge to reasonable MSE."""
-        X, y = make_regression_dataset(n=200, features=3, seed=7)
-        model = NeuralNetwork(learning_rate=0.02)
-        model.add(3, 16)
-        model.add(16, 1)
-        model.fit(X, y, epochs=1000)
-        loss = mse(y, model.predict(X))
-        assert loss < 0.5, f"Multi-feature MSE = {loss:.4f}, expected < 0.5"
-
-    def test_deeper_network_trains(self):
-        """A four-layer network should train without error and reduce loss."""
-        X, y = make_regression_dataset(n=100, features=2, seed=5)
-        model = NeuralNetwork(learning_rate=0.01)
-        model.add(2, 16)
-        model.add(16, 8)
-        model.add(8, 4)
-        model.add(4, 1)
-        model.fit(X, y, epochs=0)
-        loss_before = mse(y, model.predict(X))
-        model.fit(X, y, epochs=300)
-        loss_after = mse(y, model.predict(X))
-        assert loss_after < loss_before
-
-    def test_wider_network_trains(self):
-        """A very wide single hidden layer should still converge."""
-        X, y = make_regression_dataset(n=100, seed=9)
-        model = NeuralNetwork(learning_rate=0.01)
-        model.add(1, 64)
-        model.add(64, 1)
-        model.fit(X, y, epochs=500)
-        loss = mse(y, model.predict(X))
-        assert np.isfinite(loss)
